@@ -1,0 +1,7 @@
+{
+  "name": "salt",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
