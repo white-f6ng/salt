@@ -16,6 +16,7 @@ export class DetailsComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.chatResponse();
+    
   }
 
   chatResponse() {
