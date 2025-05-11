@@ -1,27 +1,45 @@
-#container {
+.center-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 16px;
+}
+
+ion-item {
+  width: 100%;
+  max-width: 400px; /* Adjust this to suit your design */
+  margin-bottom: 16px;
+}
+
+ion-button {
+  width: 100%;
+  max-width: 200px; /* Adjust this to suit your design */
+  margin-top: 16px;
+}
+
+p {
   text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  margin-top: 16px;
+}
+/* Center the icons and message */
+.message-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  margin-top: 20px;
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+ion-icon {
+  margin-bottom: 10px;
 }
 
-#container p {
+p {
   font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
 }
 
-#container a {
-  text-decoration: none;
-}

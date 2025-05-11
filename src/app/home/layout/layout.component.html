@@ -1,0 +1,178 @@
+<ion-tabs>
+  <div class="top-bar">
+    <ion-button fill="clear" size="small" (click)="logout()">
+      <ion-icon name="log-out-outline"></ion-icon>
+      Logout</ion-button>
+  </div>
+  <!-- Home Tab -->
+  <ion-tab tab="home">
+    <ion-content>
+      <div id="home-page">
+        <div class="example-content">
+          <p>Enter the number of minutes you want the process to run:</p>
+        </div>
+
+        <ion-item>
+          <ion-input label="Profile Update" labelPlacement="floating" type="text" #ionProfileUpdate
+            placeholder="Profile Update" class="item"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input label="Minutes" #ionMinutes type="number" class="item"
+            placeholder="Enter time in minutes"></ion-input>
+        </ion-item>
+
+        <ion-button size="small" (click)="beginTheProcess()" shape="round" expand="full">Process</ion-button>
+      </div>
+    </ion-content>
+  </ion-tab>
+
+  <ion-tab tab="search">
+    <ion-content>
+      <div id="search-page">
+        <div class="example-content">
+          <ion-searchbar (ionInput)="handleInput($event)" #searchBar
+            placeholder="Enter skills / designations / companies"></ion-searchbar>
+          @if(results.length && !selectedValue){
+          <div class="results-wrapper">
+            <ion-list>
+              @for (result of results; track result) {
+              <ion-item (click)="selectResult(result.name[0])">
+                <ion-label>{{ result.name[0] }}</ion-label>
+              </ion-item>
+              }
+            </ion-list>
+          </div>
+          }
+          <ion-input #experience label="Experience" type="text" placeholder="Enter your experience"></ion-input>
+          <ion-input #preLocation label="Prefered Location" type="text"
+            placeholder="Enter your Prefered Location"></ion-input>
+          <ion-input #preTitle label="Prefered Title" type="text"
+            placeholder="Enter your Prefered Title with coma(,)"></ion-input>
+          <ion-item>
+            <ion-label>Last Active</ion-label>
+            <ion-select interface="popover" #selectRef placeholder="Select time range">
+              <ion-select-option value="1">Last 1 day</ion-select-option>
+              <ion-select-option value="3">Last 3 days</ion-select-option>
+              <ion-select-option value="7">Last 7 days</ion-select-option>
+              <ion-select-option value="15">Last 15 days</ion-select-option>
+              <ion-select-option value="30">Last 30 days</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+
+        <div class="overlay-ref">
+          <div class="content">
+            <div class="example-content">
+              <h5>Personal Information</h5>
+              <ion-input #firstName label="First Name" type="text" placeholder="Enter your first name"
+                [disabled]="true"></ion-input>
+              <ion-input #lastName label="Last Name" type="text" placeholder="Enter your last name"
+                [disabled]="true"></ion-input>
+              <ion-input #middleName label="Middle Name" type="text" placeholder="Enter your middle name (optional)"
+                [disabled]="true"></ion-input>
+            </div>
+
+            <div class="example-content">
+              <h5>Location & Salary</h5>
+              <ion-input #currentLocation label="Current Location" type="text"
+                placeholder="Enter you r current location" [disabled]="true"></ion-input>
+              <ion-input #expectedLocation label="Expected Location" type="text"
+                placeholder="Enter your expected location" [disabled]="true"></ion-input>
+              <ion-input #currentSalary label="Current Salary" type="number" placeholder="Enter your current salary"
+                [disabled]="true"></ion-input>
+              <ion-input #expectedSalary label="Expected Salary" type="number" placeholder="Enter your expected salary"
+                [disabled]="true"></ion-input>
+            </div>
+
+            <ion-button (click)="submitSearch()" shape="round" size="small" expand="full">{{buttonMsg}}</ion-button>
+
+            @if(showMessage){
+            <div class="message-display">
+              <p>{{messageContent}}</p>
+            </div>
+            }
+
+            @if(apiService.count){
+            <span class="center-text">Applied: {{apiService.count}}</span>
+            @if(apiService.dailyCount && apiService.monthlyCount){
+            <span class="center-text">Daily Applied: {{apiService.dailyCount}}</span>
+            <span class="center-text">Monthly Applied: {{apiService.monthlyCount}}</span>
+            }
+            }
+
+            @if(apiService.appliedJobDetails && apiService.appliedJobDetails.length){
+            <div class="applied-list">
+              <p>Applied Lists:</p>
+              <ul>
+                <table border="1" style="width: 100%; border-collapse: collapse;">
+                  <thead>
+                    <tr>
+                      <th style="padding: 8px;">Company Name</th>
+                      <th style="padding: 8px;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of apiService.appliedJobDetails">
+                      @for ( job of item?.jobs; track job.id){
+                      <td style="padding: 8px;">{{ job?.companyName }}</td>
+                      <ion-icon name="checkmark-circle-outline" role="img" class="md"></ion-icon>
+                      <td style="padding: 8px;">{{ job?.message }}</td>
+                      }
+                    </tr>
+                  </tbody>
+                </table>
+              </ul>
+            </div>
+            }
+
+            @if(apiService.chatResponseJobDetails && apiService.chatResponseJobDetails.length){
+            <p>Char Response:</p>
+            <ul>
+              <table border="1" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr>
+                    <th style="padding: 8px;">Company Name</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of apiService.chatResponseJobDetails">
+                    @for ( job of item?.jobs; track job.id){
+                    <td id="open-toast" (click)="copyText(job?.companyName)" style="padding: 8px;">{{job?.companyName}}
+                    </td>
+                    }
+                  </tr>
+                </tbody>
+              </table>
+            </ul>
+            <ion-button fill="clear" (click)="exportToExcel()" size="small">
+              <ion-icon slot="start" name="download-outline"></ion-icon>
+              Export
+            </ion-button>
+            }
+            @if( apiService.errorMsg && apiService.errorMsg.length){
+            <div class="error-list">
+              <p>Errors:</p>
+              <ul>
+                <li *ngFor="let item of apiService.errorMsg">{{item}}</li>
+              </ul>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </ion-content>
+  </ion-tab>
+
+  <ion-tab-bar slot="bottom">
+    <ion-icon name="home"></ion-icon>
+    <ion-tab-button tab="home" class="tab-align">
+      <ion-icon name="play-circle"></ion-icon>
+      Profile Update
+    </ion-tab-button>
+    <ion-tab-button tab="search" class="tab-align">
+      <ion-icon name="search" role="img" class="md"></ion-icon>
+      Job Search
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>

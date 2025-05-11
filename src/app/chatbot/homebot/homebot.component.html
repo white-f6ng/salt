@@ -1,0 +1,50 @@
+<div class="chatbox">
+  <div class="messages-container">
+    <div *ngFor="let msg of messages; let i = index" [ngClass]="msg.sender">
+      <div class="message-bubble" #elementRef [attr.data-iteration-count]="i">
+        {{ msg.text }}
+        <button *ngIf="!iterationCount && msg.sender !== 'user'" id="click-trigger">Menu List</button>
+        <button *ngIf="currentStep === 5 && msg.sender !== 'user'" id="click-trigger">Job Posted</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area" *ngIf="currentStep > 2">
+    <input [(ngModel)]="userInput" (keyup.enter)="sendMessage()" placeholder="Type your answer..." />
+    <button (click)="sendMessage()">Send</button>
+  </div>
+
+  <div class="example-content" *ngIf="currentStep === 2">
+    <ion-searchbar (ionInput)="handleInput($event)" #searchBar
+      placeholder="Enter skills / designations / companies"></ion-searchbar>
+    <div class="results-wrapper" *ngIf="results.length && !selectedValue">
+      <ion-list>
+        <ion-item *ngFor="let result of results" (click)="selectResult(result.name[0])">
+          <ion-label>{{ result.name[0] }}</ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+  </div>
+</div>
+
+<!-- Menu Popover -->
+<ion-popover #menuPopover trigger="click-trigger" triggerAction="click">
+  <ng-template>
+    <ion-item (click)="updateProfile(menuPopover)">Profile Update</ion-item>
+    <ion-item (click)="searchJob(menuPopover)">Job Search</ion-item>
+    @if(currentStep== 5) {
+    <ion-item>
+      <ion-label>Last Active</ion-label>
+      <ion-select interface="popover" #selectRef placeholder="Select time range">
+        <ion-select-option value="1">Last 1 day</ion-select-option>
+        <ion-select-option value="3">Last 3 days</ion-select-option>
+        <ion-select-option value="7">Last 7 days</ion-select-option>
+        <ion-select-option value="15">Last 15 days</ion-select-option>
+        <ion-select-option value="30">Last 30 days</ion-select-option>
+      </ion-select>
+    </ion-item>
+    }
+  </ng-template>
+</ion-popover>
+
+<!-- Job Posted Popover -->

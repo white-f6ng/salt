@@ -1,0 +1,9 @@
+{
+  "/api": {
+    "target": "https://www.naukri.com",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+    
+  }
+}

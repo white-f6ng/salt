@@ -3,5 +3,12 @@
   "integrations": {
     "capacitor": {}
   },
-  "type": "angular-standalone"
+  "type": "angular-standalone",
+  "proxy": {
+    "/api": {
+      "target": "https://www.naukri.com",
+      "secure": false,
+      "changeOrigin": true
+    }
+  }
 }

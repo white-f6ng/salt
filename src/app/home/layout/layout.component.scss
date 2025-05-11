@@ -1,0 +1,286 @@
+/* Basic styles for ion-tab and content */
+ion-tabs {
+  --background: #f4f4f4;
+}
+
+ion-tab {
+  display: block;
+}
+
+ion-content {
+  padding: 20px;
+}
+
+/* Alignment for form inputs */
+.example-content {
+  margin-bottom: 20px;
+}
+
+ion-item {
+  margin-bottom: 16px;
+}
+
+ion-input {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --margin-top: 10px;
+}
+
+/* Center content inside search and home tabs */
+#home-page,
+#search-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.overlay-ref {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.content {
+  width: 100%;
+}
+
+/* Adjust button alignment */
+ion-button {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.message-display {
+  text-align: center;
+  margin-top: 20px;
+}
+
+ion-tab-button {
+  text-align: center;
+}
+
+.tab-align {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: bold;
+  font-size: 18px !important;
+  height: 25px !important;
+}
+
+ion-icon {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.item {
+  background: none;
+}
+
+/* General Page Styles */
+ion-content {
+  padding: 20px;
+}
+
+/* Centering all content except the Query Submission */
+#search-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.example-content {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+/* Overlay applied to the remaining content */
+.overlay-ref {
+  background-color: rgba(0, 0, 0, 0.1);
+  /* Semi-transparent background */
+  padding: 20px;
+  border-radius: 10px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* Styles for 'Personal Information' and 'Location & Salary' */
+.overlay-ref .content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Smaller Submit Button */
+ion-button[size="small"] {
+  margin-top: 10px;
+  width: auto;
+}
+
+/* Centering the "Applied" count */
+.center-text {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* Ensure input fields are consistent */
+ion-input {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --margin-top: 10px;
+}
+
+.item {
+  background: none !important;
+}
+
+
+ion-content {
+  padding: 20px;
+  --padding-start: 20px;
+  --padding-end: 20px;
+}
+
+#home-page,
+#search-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.example-content {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto 20px;
+}
+
+ion-item {
+  margin-bottom: 16px;
+  --background: transparent;
+}
+
+ion-input,
+ion-select {
+  width: 100%;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  font-size: 1rem;
+}
+
+ion-button {
+  margin-top: 20px;
+  width: 100%;
+}
+
+ion-button[size="small"] {
+  margin-top: 10px;
+  width: auto;
+}
+
+ion-tab-button {
+  text-align: center;
+}
+
+.tab-align {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: bold;
+  font-size: 14px;
+  height: 48px;
+}
+
+ion-icon {
+  font-size: 22px;
+  margin-bottom: 5px;
+}
+
+/* Overlay style */
+.overlay-ref {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  border-radius: 10px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.overlay-ref .content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Applied count */
+.center-text {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* Message box */
+.message-display {
+  text-align: center;
+  margin-top: 20px;
+  --background: #e0f7fa;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+  color: #00796b;
+}
+
+.top-bar {
+  position: fixed;
+  top: auto;
+  right: 10px;
+  z-index: 999;
+
+  &:hover {
+    ion-button {
+      --color: white !important;
+    }
+  }
+}
+
+.top-bar ion-button {
+  --color: #333;
+  font-weight: bold;
+}
+
+.results-wrapper {
+  max-height: 200px; 
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-top: 4px;
+
+  ion-item {
+    font-size: 14px;
+    --padding-start: 10px;
+    --inner-padding-end: 10px;
+    --min-height: 36px;
+  }
+}
+
+ion-toast.custom-toast {
+  --background: #f4f4fa;
+  --box-shadow: 3px 3px 10px 0 rgba(0, 0, 0, 0.2);
+  --color: #4b4a50;
+}
+
+ion-toast.custom-toast::part(message) {
+  font-style: italic;
+}
+
+ion-toast.custom-toast::part(button) {
+  border-left: 1px solid #d2d2d2;
+  color: #030207;
+  font-size: 15px;
+}
