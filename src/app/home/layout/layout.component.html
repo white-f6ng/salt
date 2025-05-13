@@ -44,13 +44,14 @@
             </ion-list>
           </div>
           }
-          <ion-input #experience label="Experience" type="text" placeholder="Enter your experience"></ion-input>
-          <ion-input #preLocation label="Prefered Location" type="text"
-            placeholder="Enter your Prefered Location"></ion-input>
-          <ion-input #preTitle label="Prefered Title" type="text"
+          <ion-input name="Experience" label="Experience" type="text" [(ngModel)]="userDetails.experience"
+            placeholder="Enter your experience"></ion-input>
+          <ion-input name="PreferedLocation" label="Prefered Location" type="text"
+            [(ngModel)]="userDetails.prefLocation" placeholder="Enter your Prefered Location"></ion-input>
+          <ion-input name="PreferedTitle" label="Prefered Title" type="text" [(ngModel)]="userDetails.PreferedTitle"
             placeholder="Enter your Prefered Title with coma(,)"></ion-input>
           <ion-item>
-            <ion-label>Last Active</ion-label>
+            <ion-label>Freshness</ion-label>
             <ion-select interface="popover" #selectRef placeholder="Select time range">
               <ion-select-option value="1">Last 1 day</ion-select-option>
               <ion-select-option value="3">Last 3 days</ion-select-option>
@@ -65,24 +66,7 @@
           <div class="content">
             <div class="example-content">
               <h5>Personal Information</h5>
-              <ion-input #firstName label="First Name" type="text" placeholder="Enter your first name"
-                [disabled]="true"></ion-input>
-              <ion-input #lastName label="Last Name" type="text" placeholder="Enter your last name"
-                [disabled]="true"></ion-input>
-              <ion-input #middleName label="Middle Name" type="text" placeholder="Enter your middle name (optional)"
-                [disabled]="true"></ion-input>
-            </div>
-
-            <div class="example-content">
-              <h5>Location & Salary</h5>
-              <ion-input #currentLocation label="Current Location" type="text"
-                placeholder="Enter you r current location" [disabled]="true"></ion-input>
-              <ion-input #expectedLocation label="Expected Location" type="text"
-                placeholder="Enter your expected location" [disabled]="true"></ion-input>
-              <ion-input #currentSalary label="Current Salary" type="number" placeholder="Enter your current salary"
-                [disabled]="true"></ion-input>
-              <ion-input #expectedSalary label="Expected Salary" type="number" placeholder="Enter your expected salary"
-                [disabled]="true"></ion-input>
+              <app-details #detialComponentRef></app-details>
             </div>
 
             <ion-button (click)="submitSearch()" shape="round" size="small" expand="full">{{buttonMsg}}</ion-button>
@@ -116,8 +100,8 @@
                     <tr *ngFor="let item of apiService.appliedJobDetails">
                       @for ( job of item?.jobs; track job.id){
                       <td style="padding: 8px;">{{ job?.companyName }}</td>
-                      <ion-icon name="checkmark-circle-outline" role="img" class="md"></ion-icon>
-                      <td style="padding: 8px;">{{ job?.message }}</td>
+                      <td style="padding: 8px;"><ion-icon name="checkmark-circle-outline" role="img"
+                          class="md"></ion-icon></td>
                       }
                     </tr>
                   </tbody>
@@ -176,3 +160,5 @@
     </ion-tab-button>
   </ion-tab-bar>
 </ion-tabs>
+
+

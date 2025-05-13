@@ -9,7 +9,7 @@ import { ApiService } from 'src/app/services/apiservice.service';
   selector: 'app-homebot',
   templateUrl: './homebot.component.html',
   styleUrls: ['./homebot.component.scss'],
-  imports: [IonContent, IonSearchbar, CommonModule, FormsModule, IonItem, IonPopover, IonList, IonSearchbar, IonLabel, IonSelect, IonSelectOption,IonButton],
+  imports: [IonContent, IonSearchbar, CommonModule, FormsModule, IonItem, IonPopover, IonList, IonSearchbar, IonLabel, IonSelect, IonSelectOption, IonButton],
   providers: [PopoverController]
 })
 export class HomebotComponent implements OnInit {
@@ -27,9 +27,11 @@ export class HomebotComponent implements OnInit {
   ];
   @ViewChild('elementRef') elementRef: any;
   @ViewChild('menuPopover') menuPopover: any;
+  @ViewChild('freshnessPopover') freshnessPopover: any;
   @ViewChild('searchBar') searchBar!: IonSearchbar;
+  @ViewChild('selectRef') selectRef!: IonSelect;
 
-  constructor(private apiService: ApiService) {
+  constructor(private apiService: ApiService,private popoverCtrl: PopoverController) {
     this.askNextQuestion();
   }
   ngOnInit(): void {
@@ -76,7 +78,7 @@ export class HomebotComponent implements OnInit {
   setQuestionsJobSearch() {
     this.questions.push({ type: 'experience', question: 'How many years of experience do you have?' });
     this.questions.push({ type: 'experience', question: 'Please enter your desired job location. If you are okay with any location, enter "NA".' });
-    this.questions.push({ type: 'experience', question: 'What is your preferred job posting time frame?' });
+    this.questions.push({ type: 'experience', question: 'Freshness?' });
     this.iterationCount = this.elementRef?.nativeElement?.dataset?.iterationCount;
   }
 
@@ -113,6 +115,20 @@ export class HomebotComponent implements OnInit {
     this.searchBar.value = data;
     this.messages.push({ sender: 'user', text: data, key: this.iterationCount });
     this.nextQuestion();
+  }
+
+  onMenuPopover() {
+    this.freshnessPopover.isOpen = true;
+  }
+
+  onValueSelect(popover: any) {
+    if (this.selectRef?.value?.length) {
+      popover.isOpen = false;
+      popover.dismiss();
+      let value = `Last ${this.selectRef.value} days`;
+      this.nextQuestion();
+      this.messages.push({ sender: 'user', text: value, key: this.currentStep });
+    }
   }
 
 }

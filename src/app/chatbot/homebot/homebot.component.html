@@ -4,7 +4,8 @@
       <div class="message-bubble" #elementRef [attr.data-iteration-count]="i">
         {{ msg.text }}
         <button *ngIf="!iterationCount && msg.sender !== 'user'" id="click-trigger">Menu List</button>
-        <button *ngIf="currentStep === 5 && msg.sender !== 'user'" id="click-trigger">Job Posted</button>
+        <button *ngIf="msg.key === 5 && msg.sender !== 'user'" id="freshNess-trigger" (click)="onMenuPopover()">Job
+          Posted</button>
       </div>
     </div>
   </div>
@@ -32,10 +33,13 @@
   <ng-template>
     <ion-item (click)="updateProfile(menuPopover)">Profile Update</ion-item>
     <ion-item (click)="searchJob(menuPopover)">Job Search</ion-item>
-    @if(currentStep== 5) {
+  </ng-template>
+</ion-popover>
+
+<ion-popover #freshnessPopover trigger="freshNess-trigger" triggerAction="click">
+  <ng-template>
     <ion-item>
-      <ion-label>Last Active</ion-label>
-      <ion-select interface="popover" #selectRef placeholder="Select time range">
+      <ion-select  (ionChange)="onValueSelect(freshnessPopover)" interface="popover" #selectRef placeholder="Select time range">
         <ion-select-option value="1">Last 1 day</ion-select-option>
         <ion-select-option value="3">Last 3 days</ion-select-option>
         <ion-select-option value="7">Last 7 days</ion-select-option>
@@ -43,7 +47,6 @@
         <ion-select-option value="30">Last 30 days</ion-select-option>
       </ion-select>
     </ion-item>
-    }
   </ng-template>
 </ion-popover>
 

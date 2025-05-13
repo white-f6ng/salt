@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { BehaviorSubject, catchError, from, Observable, throwError } from 'rxjs';
 import * as XLSX from 'xlsx';
@@ -21,10 +21,18 @@ export class ApiService {
   monthlyCount: number = 0;
   isLoggingOut: boolean = false;
 
+
   private chatResponseInSubject = new BehaviorSubject<any>(null);
   chatResponseIn$ = this.chatResponseInSubject.asObservable();
+  private questionnaireInSubject = new BehaviorSubject<any>(null);
+  questionnaireIn$ = this.questionnaireInSubject.asObservable();
 
-  constructor(private http: HttpClient) { }
+  private chatQuest = signal<any>(null);
+  chatQuest$ = this.chatQuest;
+
+  constructor(private http: HttpClient) {
+
+  }
   async beginProcess(bodyData: any) {
     const url = "https://www.naukri.com/cloudgateway-mynaukri/resman-aggregator-services/v1/users/self/fullprofiles";
 
@@ -261,6 +269,7 @@ export class ApiService {
 
                   this.count = this.count + 1;
                 } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse) {
+                  this.applyChatResponse(applySucc?.data);
                   this.chatResponseJobDetails = this.chatResponseJobDetails.concat(applySucc?.data) as any;
                 } else {
                   this.allJobDetails = this.allJobDetails.concat(applySucc?.data) as any;
@@ -373,6 +382,25 @@ export class ApiService {
     this.chatResponseInSubject.next(charRes.data);
     return charRes;
   }
+
+
+  applyChatResponse(chatResponse: any) {
+    if (chatResponse?.jobs.length) {
+      let jobDetails = chatResponse?.jobs.find((x: any) => x.questionnaire);
+      for (let index in jobDetails?.questionnaire) {
+        if (index) {
+          let question = jobDetails?.questionnaire[index];
+          if (question) {
+            this.questionnaireInSubject.next({ question });
+            this.chatQuest$.set(question);
+          }
+        }
+      }
+    }
+  }
+
+
+
 
 
   async getLovData(query: string) {

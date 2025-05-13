@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonButton, IonContent, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSelect, IonSelectOption, IonTab, IonTabBar, IonTabButton, IonTabs, IonToast } from "@ionic/angular/standalone";
 import { ApiService } from 'src/app/services/apiservice.service';
@@ -9,6 +9,9 @@ import { CommonModule } from '@angular/common';
 import { Preferences } from '@capacitor/preferences';
 import { Clipboard } from '@capacitor/clipboard';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
+import { DetailsComponent } from '../details/details.component';
+import { getlocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
+import { FormsModule } from '@angular/forms';
 
 
 
@@ -16,26 +19,20 @@ import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
   selector: 'app-layout',
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss'],
-  imports: [IonLabel, IonIcon, IonTab, IonTabBar, IonTabButton, CommonModule, IonTabs, IonInput, IonButton, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonSearchbar, IonList],
+  imports: [IonLabel, IonIcon, IonTab, IonTabBar, IonTabButton, CommonModule, IonTabs, IonInput, IonButton, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonSearchbar, IonList, DetailsComponent, FormsModule],
   providers: [BackgroundMode]
 })
 export class LayoutComponent implements OnInit, AfterViewInit {
 
   searchData: any = {};
   @ViewChild('searchBar') searchBar!: IonSearchbar;
-  @ViewChild('experience') experience!: IonInput;
-  @ViewChild('firstName') firstName!: IonInput;
-  @ViewChild('lastName') lastName!: IonInput;
-  @ViewChild('middleName') middleName!: IonInput;
-  @ViewChild('currentLocation') currentLocation!: IonInput;
-  @ViewChild('expectedLocation') expectedLocation!: IonInput;
-  @ViewChild('currentSalary') currentSalary!: IonInput;
-  @ViewChild('expectedSalary') expectedSalary!: IonInput;
   @ViewChild('ionMinutes') ionMinutes!: IonInput;
   @ViewChild('ionProfileUpdate') ionProfileUpdate!: IonInput;
   @ViewChild('preLocation') preLocation!: IonInput;
-  @ViewChild('preTitle') preTitle!: IonInput;
   @ViewChild('selectRef') selectRef!: IonSelect;
+  @ViewChild('detialComponentRef') detialComponentRef!: DetailsComponent;
+  @ViewChildren(IonInput) ionInputs!: QueryList<IonInput>;
+
   showMessage: boolean = false;
   messageContent: string = "";
   buttonMsg: string = "Submit";
@@ -48,6 +45,12 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     profileId: "5d1d9111d83e31fd4c4c5af2761a478a57e6da4935a9e7c2fcc93b141dd0abb8",
   };
 
+  userDetails: any = {
+    experience: "",
+    prefLocation: "",
+    PreferedTitle: "",
+  }
+
   public results: any = [];
 
   constructor(public apiService: ApiService, private router: Router, private platform: Platform,
@@ -55,6 +58,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     private backgroundMode: BackgroundMode,
   ) {
     addIcons({ logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline });
+
   }
 
   ngOnInit() {
@@ -64,14 +68,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.assignPreferredTitle();
-  }
-
-  async assignPreferredTitle() {
-    let value = await this.getPreTitle() as any;
-    if (value) {
-      this.preTitle.value = value;
-    }
+    this.getLocalStorage();
   }
 
   startBackgroundTask() {
@@ -98,7 +95,6 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   }
 
-
   async beginTheProcess() {
     let isfirst = 0;
     await this.apiService.getDashboardData()
@@ -116,7 +112,6 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     }, timeInterval);
   }
 
-
   async processData() {
 
     let { profile, profileId } = this.apiService.dashboardOutResult
@@ -127,8 +122,8 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   submitSearch() {
     let preferedTitle: string[] = [];
 
-    if (typeof this.preTitle?.value === 'string') {
-      preferedTitle = this.preTitle.value.split(',');
+    if (typeof this.userDetails.PreferedTitle === 'string') {
+      preferedTitle = this.userDetails.PreferedTitle.split(',');
     } else {
       preferedTitle = [];
     }
@@ -139,23 +134,17 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     } else if (this.apiService.token) {
       this.searchData = {
         skills: this.selectedValue,
-        experience: this.experience.value,
-        location: this.preLocation.value,
+        experience: this.userDetails.experience,
+        location: this.userDetails.prefLocation,
         jobAge: this.selectRef.value,
         preferedTitle: preferedTitle,
-        firstName: this.firstName.value,
-        lastName: this.lastName.value,
-        middleName: this.middleName.value,
-        currentLocation: this.currentLocation.value,
-        expectedLocation: this.expectedLocation.value,
-        currentSalary: this.currentSalary.value,
-        expectedSalary: this.expectedSalary.value
       }
+
       this.buttonMsg = "Cancel";
       this.apiService.errorMsg = [];
       this.apiService.canProceed = true;
       this.apiService.searchJobs(this.searchData)
-      this.setPreTitle();
+      this.setlocalStorage();
     } else {
       this.showMessage = true;
       this.messageContent = "Your token has been expired, Please login to use this feature."
@@ -165,6 +154,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       }, 3000);
     }
   }
+
   logout() {
     this.apiService.isLoggingOut = true;
     this.router.navigate([""]);
@@ -187,19 +177,6 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     const query = target.value?.toLowerCase() || '';
     this.results = await this.apiService.getLovData(query);
   }
-
-
-  setPreTitle = async () => {
-    await Preferences.set({
-      key: 'preTitle',
-      value: this.preTitle.value as string,
-    });
-  };
-
-  getPreTitle = async () => {
-    const preferedTitle = await Preferences.get({ key: 'preTitle' });
-    return preferedTitle.value;
-  };
 
   async copyText(text: string) {
     if (this.platform.is('capacitor')) {
@@ -237,4 +214,22 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     }
   }
 
+  setlocalStorage = async () => {
+    for (const input of this.ionInputs.toArray()) {
+      const nameAttr = (await input.getInputElement()).name;
+      const value = await input.getInputElement().then(el => el.value);
+      if (nameAttr && value) {
+        await setlocalStorageData(nameAttr, value);
+      }
+    }
+  }
+
+  getLocalStorage = async () => {
+    for (const key of Object.keys(this.userDetails)) {
+      const result = await getlocalStorageData(key);
+      if (result !== null) {
+        this.userDetails[key] = result;
+      }
+    }
+  }
 }

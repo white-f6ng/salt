@@ -1,1 +1,4 @@
-<ion-input #currentLocation label="Current Location" type="text" placeholder="Enter you r current location"></ion-input>
+@for( input of controls; track input) {
+    <ion-input name="{{input.name}}" label="{{input.label}}" type="{{input.type}}"
+        [(ngModel)]="userDetails[input.name]"></ion-input>
+}
