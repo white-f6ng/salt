@@ -1,13 +1,14 @@
-import { AfterViewInit, Component, computed, effect, OnInit } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ApiService } from 'src/app/services/apiservice.service';
-import { IonInput } from "@ionic/angular/standalone";
+import { IonInput, IonButton } from "@ionic/angular/standalone";
 import { FormsModule } from '@angular/forms';
+import { getlocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
 
 @Component({
   selector: 'app-details',
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.scss'],
-  imports: [IonInput, FormsModule]
+  imports: [IonButton, IonInput, FormsModule]
 })
 export class DetailsComponent implements OnInit, AfterViewInit {
 
@@ -17,7 +18,9 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   questionnaire: { [key: string]: string } = {};
   controls: { name: string; label: string, type: string }[] = [];
   userDetails: any = {};
-
+  allJobDetails: any = [];
+  canDetailsShow: boolean = false;
+  @ViewChildren('ioninput') ioninput!: QueryList<IonInput>;
   //#endregion Variables
 
   constructor(private apiService: ApiService) {
@@ -60,10 +63,18 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   questionnaireResponse() {
     this.apiService.questionnaireIn$.subscribe(result => {
       if (result) {
-        this.questionnaire[result?.questionName.replace(/[\s/()?]+/g, "")];
-        this.controls.concat({ name: result?.questionName.replace(/[\s/()?]+/g, ""), label: result?.questionName, type: "text" });
+        this.allJobDetails.public(result);
+        let keys = result?.questionName.replace(/[\s/()?]+/g, "")
+        let storedData = this.getUserDetails(keys) as any;
+
+        if (storedData != null) {
+          this.apiService.replyChatBotResponse(result, storedData);
+        } else {
+          this.controls.push({ name: keys, label: result?.questionName, type: "text" });
+          this.canDetailsShow = true;
+        }
       }
-    })
+    });
   }
 
   question = computed(() => this.apiService.chatQuest$());
@@ -81,8 +92,27 @@ export class DetailsComponent implements OnInit, AfterViewInit {
     this.controls.push(...data);
   }
 
-  setUserDetails() {
-    
+  setUserDetails(key: string, value: string) {
+    setlocalStorageData(key, value);
   }
+
+  getUserDetails(key: string) {
+    return getlocalStorageData(key)
+  }
+
+
+  onSubmit() {
+    let dataSource = this.ioninput.toArray();
+
+    for (let i = 0; i < dataSource.length; i++) {
+      let value = dataSource[i].value as any;
+      if (value) {
+        this.setUserDetails(dataSource[i].name, value);
+      }
+      this.apiService.replyChatBotResponse(this.allJobDetails, value);
+    }
+    this.canDetailsShow = false;
+  }
+
 
 }

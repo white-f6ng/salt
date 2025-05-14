@@ -232,4 +232,11 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       }
     }
   }
+
+  openJobDetail(job: any) {
+    if (job) {
+      this.apiService.applyChatResponse(job);
+    }
+
+  }
 }
