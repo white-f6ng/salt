@@ -16,7 +16,7 @@ export class DetailsComponent implements OnInit, AfterViewInit {
 
   questionnaire: { [key: string]: string } = {};
   controls: { name: string; label: string, type: string }[] = [];
-  userDetails: any = {}
+  userDetails: any = {};
 
   //#endregion Variables
 
@@ -69,12 +69,20 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   question = computed(() => this.apiService.chatQuest$());
 
   assignDefault() {
-    this.controls.push({ name: "FirstName", label: "First Name", type: "text" });
-    this.controls.push({ name: "LastName", label: "Last Name", type: "text" });
-    this.controls.push({ name: "CGPAPercentagelastEdu", label: "CGPA Percentage last Edu", type: "text" });
-    this.controls.push({ name: "CurrentCompany", label: "Current Company", type: "text" });
-    this.controls.push({ name: "WhatisyourcurrentCTCinLakhsperannum", label: "What is your current CTC in Lakhs per annum", type: "text" });
-    this.controls.push({ name: "WhatisyourexpectedCTCinLakhsperannum", label: "What is your expected CTC in Lakhs per annum", type: "text" });
+    let data = [
+      { name: "FirstName", label: "First Name", type: "text" },
+      { name: "LastName", label: "Last Name", type: "text" },
+      { name: "CGPAPercentagelastEdu", label: "CGPA Percentage last Edu", type: "text" },
+      { name: "CurrentCompany", label: "Current Company", type: "text" },
+      { name: "WhatisyourcurrentCTCinLakhsperannum", label: "What is your current CTC in Lakhs per annum", type: "text" },
+      { name: "WhatisyourexpectedCTCinLakhsperannum", label: "What is your expected CTC in Lakhs per annum", type: "text" }
+    ];
+
+    this.controls.push(...data);
+  }
+
+  setUserDetails() {
+    
   }
 
 }
