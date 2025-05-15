@@ -53,29 +53,35 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   }
 
   chatResponse() {
-    this.apiService.chatResponseIn$.subscribe(result => {
+    this.apiService.questionnaireIn$.subscribe(async result => {
       if (result) {
-        console.log("Chat response: ", result);
+        let question = result?.chatbotResponse?.speechResponse.find((x: any) => x.response);
+        let key = question?.response.replace(/[\s/()?]+/g, "");
+        let storedData = await this.getUserDetails('username');
+        console.log("storedData", storedData);
+
       }
     })
   }
 
   questionnaireResponse() {
-    this.apiService.questionnaireIn$.subscribe(result => {
-      if (result) {
-        this.allJobDetails.public(result);
-        let keys = result?.questionName.replace(/[\s/()?]+/g, "")
-        let storedData = this.getUserDetails(keys) as any;
+    // this.apiService.questionnaireIn$.subscribe(result => {
+    //   if (result) {
+    //     this.allJobDetails.push(result);
+    //     let keys = result?.question?.questionName.replace(/[\s/()?]+/g, "")
+    //     let storedData = this.getUserDetails(keys) as any;
 
-        if (storedData != null) {
-          this.apiService.replyChatBotResponse(result, storedData);
-        } else {
-          this.controls.push({ name: keys, label: result?.questionName, type: "text" });
-          this.canDetailsShow = true;
-        }
-      }
-    });
+    //     if (storedData != null) {
+    //       this.apiService.replyChatBotResponse(result, storedData);
+    //     } else {
+    //       this.controls.push({ name: keys, label: result?.questionName, type: "text" });
+    //       this.canDetailsShow = true;
+    //     }
+    //   }
+    // });
   }
+
+
 
   question = computed(() => this.apiService.chatQuest$());
 
@@ -96,8 +102,9 @@ export class DetailsComponent implements OnInit, AfterViewInit {
     setlocalStorageData(key, value);
   }
 
-  getUserDetails(key: string) {
-    return getlocalStorageData(key)
+  async getUserDetails(key: string) {
+    let data = await getlocalStorageData(key);
+    return data.value;
   }
 
 

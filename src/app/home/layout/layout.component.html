@@ -44,7 +44,7 @@
             </ion-list>
           </div>
           }
-          <ion-input name="Experience" label="Experience" type="text" [(ngModel)]="userDetails.experience"
+          <ion-input name="Experience" label="Experience" type="text" [(ngModel)]="userDetails.Experience"
             placeholder="Enter your experience"></ion-input>
           <ion-input name="PreferedLocation" label="Prefered Location" type="text"
             [(ngModel)]="userDetails.prefLocation" placeholder="Enter your Prefered Location"></ion-input>
@@ -66,9 +66,8 @@
           <div class="content">
             <div class="example-content">
               <h5>Personal Information</h5>
-              @if(detialComponentRef.canDetailsShow){
+              
               <app-details #detialComponentRef></app-details>
-              }
             </div>
 
             <ion-button (click)="submitSearch()" shape="round" size="small" expand="full">{{buttonMsg}}</ion-button>

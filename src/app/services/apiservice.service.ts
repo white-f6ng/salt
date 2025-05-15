@@ -386,16 +386,17 @@ export class ApiService {
 
   applyChatResponse(chatResponse: any) {
     if (chatResponse?.jobs.length) {
-      let jobDetails = chatResponse?.jobs.find((x: any) => x.questionnaire);
-      for (let index in jobDetails?.questionnaire) {
-        if (index) {
-          let question = jobDetails?.questionnaire[index];
-          if (question) {
-            this.questionnaireInSubject.next({ question });
-            this.chatQuest$.set(question);
-          }
-        }
-      }
+      // let jobDetails = chatResponse?.jobs.find((x: any) => x.questionnaire);
+      // for (let index in jobDetails?.questionnaire) {
+      //   if (index) {
+      //     let question = jobDetails?.questionnaire[index];
+      //     if (question) {
+      
+      //       this.chatQuest$.set(question);
+      //     }
+      //   }
+      // }
+            this.questionnaireInSubject.next(chatResponse);
     }
   }
 

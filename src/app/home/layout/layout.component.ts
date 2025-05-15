@@ -46,7 +46,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   };
 
   userDetails: any = {
-    experience: "",
+    Experience: "",
     prefLocation: "",
     PreferedTitle: "",
   }
@@ -222,14 +222,22 @@ export class LayoutComponent implements OnInit, AfterViewInit {
         await setlocalStorageData(nameAttr, value);
       }
     }
+    if (this?.searchBar?.value) {
+      await setlocalStorageData('SearchBar', this?.searchBar?.value);
+    }
   }
 
   getLocalStorage = async () => {
     for (const key of Object.keys(this.userDetails)) {
       const result = await getlocalStorageData(key);
-      if (result !== null) {
-        this.userDetails[key] = result;
+      if (result.value !== null) {
+        this.userDetails[key] = result.value;
       }
+    }
+    let searchBar = await getlocalStorageData('SearchBar');
+    if (searchBar.value !== null) {
+      this.searchBar.value = searchBar.value;
+      this.selectResult(searchBar.value);
     }
   }
 
