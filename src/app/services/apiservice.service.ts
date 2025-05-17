@@ -360,7 +360,7 @@ export class ApiService {
       deviceType: "WEB",
       domain: "Naukri",
       input: { text: [text], id: ["-1"] },
-      status: "Returning",
+      status: "Fresh",
       utmContent: "",
       utmSource: "",
     }

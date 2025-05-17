@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, computed, effect, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ApiService } from 'src/app/services/apiservice.service';
-import { IonInput, IonButton } from "@ionic/angular/standalone";
+import { IonInput, IonButton, IonList, IonLabel, IonItem, IonRadio, IonRadioGroup } from "@ionic/angular/standalone";
 import { FormsModule } from '@angular/forms';
 import { getlocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
 
@@ -8,7 +8,7 @@ import { getlocalStorageData, setlocalStorageData } from 'src/app/core/helpers/u
   selector: 'app-details',
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.scss'],
-  imports: [IonButton, IonInput, FormsModule]
+  imports: [IonRadioGroup, IonButton, IonInput, FormsModule, IonList, IonLabel, IonItem, IonRadio]
 })
 export class DetailsComponent implements OnInit, AfterViewInit {
 
@@ -16,11 +16,14 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   //#region Variables
 
   questionnaire: { [key: string]: string } = {};
-  controls: { name: string; label: string, type: string }[] = [];
+  controls: { name: string; label: string, type: string, options?: any }[] = [];
   userDetails: any = {};
   allJobDetails: any = [];
   canDetailsShow: boolean = false;
   @ViewChildren('ioninput') ioninput!: QueryList<IonInput>;
+  options: any = [];
+  applyData: any = {};
+
   //#endregion Variables
 
   constructor(private apiService: ApiService) {
@@ -55,10 +58,30 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   chatResponse() {
     this.apiService.questionnaireIn$.subscribe(async result => {
       if (result) {
-        let question = result?.chatbotResponse?.speechResponse.find((x: any) => x.response);
-        let key = question?.response.replace(/[\s/()?]+/g, "");
-        let storedData = await this.getUserDetails('username');
-        console.log("storedData", storedData);
+        let question = result?.chatbotResponse?.speechResponse.filter((x: any) => x.response);
+        let questionnaire = result.jobs.find((x: any) => x.questionnaire).questionnaire;
+
+        let matchedQuestion = questionnaire
+          .find((q: any) => question.some((resp: any) => resp.response === q.questionName))
+        if (matchedQuestion) {
+
+          let key = matchedQuestion?.questionName.replace(/[\s/()?]+/g, "");
+          let storedData = await this.getUserDetails(key);
+          if (storedData != null) {
+            this.apiService.replyChatBotResponse(result?.chatbotResponse, storedData);
+          } else {
+
+            let options;
+            if (matchedQuestion.questionType === "Radio Button") {
+              options = result?.chatbotResponse?.options;
+            }
+
+            if (!this.controls.some(x => x.name == key)) {
+              this.controls.push({ name: key, label: matchedQuestion?.questionName, type: matchedQuestion.questionType, options: options });
+            }
+            this.canDetailsShow = true;
+          }
+        }
 
       }
     })
@@ -87,12 +110,12 @@ export class DetailsComponent implements OnInit, AfterViewInit {
 
   assignDefault() {
     let data = [
-      { name: "FirstName", label: "First Name", type: "text" },
-      { name: "LastName", label: "Last Name", type: "text" },
-      { name: "CGPAPercentagelastEdu", label: "CGPA Percentage last Edu", type: "text" },
-      { name: "CurrentCompany", label: "Current Company", type: "text" },
-      { name: "WhatisyourcurrentCTCinLakhsperannum", label: "What is your current CTC in Lakhs per annum", type: "text" },
-      { name: "WhatisyourexpectedCTCinLakhsperannum", label: "What is your expected CTC in Lakhs per annum", type: "text" }
+      { name: "FirstName", label: "First Name", type: "Text Box" },
+      { name: "LastName", label: "Last Name", type: "Text Box" },
+      { name: "CGPAPercentagelastEdu", label: "CGPA Percentage last Edu", type: "Text Box" },
+      { name: "CurrentCompany", label: "Current Company", type: "Text Box" },
+      { name: "WhatisyourcurrentCTCinLakhsperannum", label: "What is your current CTC in Lakhs per annum", type: "Text Box" },
+      { name: "WhatisyourexpectedCTCinLakhsperannum", label: "What is your expected CTC in Lakhs per annum", type: "Text Box" }
     ];
 
     this.controls.push(...data);
@@ -115,10 +138,11 @@ export class DetailsComponent implements OnInit, AfterViewInit {
       let value = dataSource[i].value as any;
       if (value) {
         this.setUserDetails(dataSource[i].name, value);
+        this.controls = this.controls.filter(x => x.name != dataSource[i].name);
       }
-      this.apiService.replyChatBotResponse(this.allJobDetails, value);
+      // this.apiService.replyChatBotResponse(this.allJobDetails, value);
     }
-    this.canDetailsShow = false;
+    // this.canDetailsShow = false;
   }
 
 
