@@ -225,6 +225,9 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     if (this?.searchBar?.value) {
       await setlocalStorageData('SearchBar', this?.searchBar?.value);
     }
+    if (this?.selectRef?.value) {
+      await setlocalStorageData('JobAge', this?.selectRef?.value);
+    }
   }
 
   getLocalStorage = async () => {
@@ -239,12 +242,23 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       this.searchBar.value = searchBar.value;
       this.selectResult(searchBar.value);
     }
+    let jobAge = await getlocalStorageData('JobAge');
+    if (jobAge.value !== null) {
+      this.selectRef.value = jobAge.value;
+    }
   }
 
-  openJobDetail(job: any) {
+  async openJobDetail(job: any) {
     if (job) {
-      this.apiService.applyChatResponse(job);
+      this.detialComponentRef.canProcess = true;
+      await this.apiService.applyChatResponse(job);
     }
+  }
 
+  async clearChatRes() {
+    for (const key of this.apiService.chatResponseJobDetails) {
+      this.detialComponentRef.canProcess = true;
+      await this.apiService.applyChatResponse(key);
+    }
   }
 }

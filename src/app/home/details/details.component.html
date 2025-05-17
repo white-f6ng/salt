@@ -1,27 +1,32 @@
-@for( input of controls; track input) {
+<div class="example-content">
+    @if(controls && controls.length){
+    <h5>Personal Information</h5>
+    @for( input of controls; track input) {
     @if(input.type =="Text Box"){
-        <ion-input #ioninput name="{{input.name}}" label="{{input.label}} :" type="{{input.type}}"
-        [(ngModel)]="userDetails[input.name]" placeholder="Enter {{input.label}}"></ion-input>
+    <ion-input #ioninput name="{{input.name}}" class="wrap-label" [labelPlacement]="'stacked'" label="{{input.label}}"
+        type="{{input.type}}" [(ngModel)]="userDetails[input.name]"></ion-input>
     }
 
-    @if(input.type =="Radio Button"){
-        <ion-label>{{input.label}}</ion-label>
-        <ion-radio-group name="{{input.name}}"  [(ngModel)]="userDetails[input.name]">
-            <ion-list>
-                @for(option of input.options; track option) {
-                    
-                    <ion-item >
-                        <ion-label>{{ option.name }}</ion-label>
-                        <ion-radio slot="start" [value]="option.value"></ion-radio>
-                    </ion-item>
-                }
-            </ion-list>
-        </ion-radio-group>
+    @if(input.type =="Radio Button" ||input.type =="List Menu"){
+    <ion-label class="wrap-label">{{input.label}}</ion-label>
+    <ion-radio-group #ionRadioInput name="{{input.name}}" [(ngModel)]="userDetails[input.name]">
+        <ion-list>
+            @for(option of input.options; track option) {
+
+            <ion-item>
+                <ion-label class="wrap-label">{{ option.name }}</ion-label>
+                <ion-radio slot="start" [value]="option.value"></ion-radio>
+            </ion-item>
+            }
+        </ion-list>
+    </ion-radio-group>
     }
 
-}
+    }
 
-<ion-button fill="clear" (click)="onSubmit()" size="small">
+    <ion-button fill="clear" (click)="onSubmit()" size="small">
 
-    Process
-</ion-button>
+        Process
+    </ion-button>
+    }
+</div>

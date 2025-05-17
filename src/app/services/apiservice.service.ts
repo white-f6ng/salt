@@ -24,7 +24,7 @@ export class ApiService {
 
   private chatResponseInSubject = new BehaviorSubject<any>(null);
   chatResponseIn$ = this.chatResponseInSubject.asObservable();
-  private questionnaireInSubject = new BehaviorSubject<any>(null);
+  public questionnaireInSubject = new BehaviorSubject<any>(null);
   questionnaireIn$ = this.questionnaireInSubject.asObservable();
 
   private chatQuest = signal<any>(null);
@@ -208,71 +208,75 @@ export class ApiService {
             };
 
             const responseJobApply = await CapacitorHttp.get(options);
-            let resJobDetails = responseJobApply?.data?.jobDetails;
-            const jobTitle = resJobDetails?.title?.toLowerCase();
 
-            const hasMatch = preTitle.some((x: string) => jobTitle.includes(x.toLowerCase()) || resJobDetails?.keySkills?.preferred.some((y: any) => y.label.toLowerCase().includes(x)));
-            if (resJobDetails) {
-              if (!resJobDetails?.applyRedirectUrl
-                && hasMatch) {
-                let jobApply = `https://www.naukri.com/cloudgateway-workflow/workflow-services/apply-workflow/v1/apply`;
+            if (!responseJobApply?.data?.microsite) {
+              let resJobDetails = responseJobApply?.data?.jobDetails;
+              const jobTitle = resJobDetails?.title?.toLowerCase();
 
-                let obj = {
-                  applySrc: "cluster",
-                  applyTypeId: "107",
-                  chatBotSDK: true,
-                  closebtn: "y",
-                  crossdomain: true,
-                  flowtype: "show",
-                  jquery: 1,
-                  logStr: resJobDetails?.logStr,
-                  mandatory_skills: resJobDetails?.keySkills?.preferred.map(
-                    (x: any) => x.label
-                  ),
-                  optional_skills: resJobDetails?.keySkills?.other.map(
-                    (x: any) => x.label
-                  ),
-                  rdxMsgId: "",
-                  sid: resJobDetails?.logStr.split("-")[8],
-                  strJobsarr: [resJobDetails.jobId],
-                };
-                let headers = {
-                  url: jobApply,
-                  headers: {
-                    "Content-Type": "application/json",
-                    accept: "application/json",
-                    appid: "121",
-                    clientid: "d3skt0p",
-                    systemid: "Naukri",
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-                    Authorization: `Bearer ${this.token}`,
-                    NKparam: "==",
-                    cookie: "nauk_at",
-                  },
-                  data: obj,
-                }
+              const hasMatch = preTitle.some((x: string) => jobTitle.includes(x.toLowerCase()) || resJobDetails?.keySkills?.preferred.some((y: any) => y.label.toLowerCase().includes(x)));
+              if (resJobDetails) {
+                if (!resJobDetails?.applyRedirectUrl
+                  && hasMatch) {
+                  let jobApply = `https://www.naukri.com/cloudgateway-workflow/workflow-services/apply-workflow/v1/apply`;
 
-
-                let applySucc = await CapacitorHttp.post(headers);
-                let quotaDetails = applySucc?.data?.quotaDetails
-                if (quotaDetails) {
-                  this.dailyCount = quotaDetails?.dailyApplied;
-                  this.monthlyCount = quotaDetails?.monthlyApplied;
-                }
-                if (!applySucc?.data?.chatbotResponse) {
-
-                  if (applySucc?.data?.message?.statusCode == 403) {
-
-                    throw new Error("Daily quota of jobs exceeded");
+                  let obj = {
+                    applySrc: "cluster",
+                    applyTypeId: "107",
+                    chatBotSDK: true,
+                    closebtn: "y",
+                    crossdomain: true,
+                    flowtype: "show",
+                    jquery: 1,
+                    logStr: resJobDetails?.logStr,
+                    mandatory_skills: resJobDetails?.keySkills?.preferred.map(
+                      (x: any) => x.label
+                    ),
+                    optional_skills: resJobDetails?.keySkills?.other.map(
+                      (x: any) => x.label
+                    ),
+                    rdxMsgId: "",
+                    sid: resJobDetails?.logStr.split("-")[8],
+                    strJobsarr: [resJobDetails.jobId],
+                  };
+                  let headers = {
+                    url: jobApply,
+                    headers: {
+                      "Content-Type": "application/json",
+                      accept: "application/json",
+                      appid: "121",
+                      clientid: "d3skt0p",
+                      systemid: "Naukri",
+                      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                      Authorization: `Bearer ${this.token}`,
+                      NKparam: "==",
+                      cookie: "nauk_at",
+                    },
+                    data: obj,
                   }
-                  this.appliedJobDetails = this.appliedJobDetails.concat(applySucc.data) as any;
 
-                  this.count = this.count + 1;
-                } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse) {
-                  this.applyChatResponse(applySucc?.data);
-                  this.chatResponseJobDetails = this.chatResponseJobDetails.concat(applySucc?.data) as any;
-                } else {
-                  this.allJobDetails = this.allJobDetails.concat(applySucc?.data) as any;
+
+                  let applySucc = await CapacitorHttp.post(headers);
+                  let quotaDetails = applySucc?.data?.quotaDetails
+                  if (quotaDetails) {
+                    this.dailyCount = quotaDetails?.dailyApplied;
+                    this.monthlyCount = quotaDetails?.monthlyApplied;
+                  }
+                  if (!applySucc?.data?.chatbotResponse) {
+
+                    if (applySucc?.data?.message?.statusCode == 403) {
+
+                      throw new Error("Daily quota of jobs exceeded");
+                    }
+                    this.appliedJobDetails = this.appliedJobDetails.concat(applySucc.data) as any;
+
+                    this.count = this.count + 1;
+                  } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse) {
+                    applySucc.data["testObj"] = obj;
+                    this.applyChatResponse(applySucc?.data);
+                    this.chatResponseJobDetails = this.chatResponseJobDetails.concat(applySucc?.data) as any;
+                  } else {
+                    this.allJobDetails = this.allJobDetails.concat(applySucc?.data) as any;
+                  }
                 }
               }
             }
@@ -359,7 +363,7 @@ export class ApiService {
       conversation: cr.currentConversationName,
       deviceType: "WEB",
       domain: "Naukri",
-      input: { text: [text], id: ["-1"] },
+      input: { id: ["-1"], text: [text] },
       status: "Fresh",
       utmContent: "",
       utmSource: "",
@@ -370,14 +374,13 @@ export class ApiService {
       url: url,
       headers: {
         "Content-Type": "application/json",
-        accept: "application/json",
-        clientid: "d3skt0p",
-        systemid: "Naukri",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        Authorization: `Bearer ${this.token}`,
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0",
+        "Authorization": `Bearer ${this.token}`,
       },
-      body: assignValue
-    }
+      data: JSON.stringify(assignValue),
+    };
+
     let charRes = await CapacitorHttp.post(options);
     this.chatResponseInSubject.next(charRes.data);
     return charRes;
@@ -386,20 +389,53 @@ export class ApiService {
 
   applyChatResponse(chatResponse: any) {
     if (chatResponse?.jobs.length) {
-      // let jobDetails = chatResponse?.jobs.find((x: any) => x.questionnaire);
-      // for (let index in jobDetails?.questionnaire) {
-      //   if (index) {
-      //     let question = jobDetails?.questionnaire[index];
-      //     if (question) {
-      
-      //       this.chatQuest$.set(question);
-      //     }
-      //   }
-      // }
-            this.questionnaireInSubject.next(chatResponse);
+      this.questionnaireInSubject.next(chatResponse);
     }
   }
 
+  async successResponse(cr: any) {
+
+    let jobApply = `https://www.naukri.com/cloudgateway-workflow/workflow-services/apply-workflow/v1/apply`;
+
+    let obj = {
+      applyData: cr.testObj.applyData,
+      applySrc: "jobsearchDesk",
+      applyTypeId: "107",
+      chatBotSDK: true,
+      closebtn: "y",
+      crossdomain: true,
+      flowtype: "show",
+      jquery: 1,
+      logStr: cr.testObj.logStr,
+      mandatory_skills: cr.testObj.mandatory_skills,
+      optional_skills: cr.testObj.optional_skills,
+      rdxMsgId: "",
+      sid: cr.testObj.sid,
+      strJobsarr: cr.testObj.strJobsarr,
+    };
+    let headers = {
+      url: jobApply,
+      headers: {
+        "Content-Type": "application/json",
+        accept: "application/json",
+        appid: "121",
+        clientid: "d3skt0p",
+        systemid: "Naukri",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        Authorization: `Bearer ${this.token}`,
+        NKparam: "==",
+        cookie: "nauk_at",
+      },
+      data: obj,
+    }
+
+
+    let applySucc = await CapacitorHttp.post(headers);
+
+    this.dailyCount = applySucc?.data?.quotaDetails?.dailyApplied;
+    this.monthlyCount = applySucc?.data?.quotaDetails?.monthlyApplied;
+
+  }
 
 
 

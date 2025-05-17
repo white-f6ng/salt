@@ -64,13 +64,10 @@
 
         <div class="overlay-ref">
           <div class="content">
-            <div class="example-content">
-              <h5>Personal Information</h5>
-              
-              <app-details #detialComponentRef></app-details>
-            </div>
+            <app-details #detialComponentRef></app-details>
 
             <ion-button (click)="submitSearch()" shape="round" size="small" expand="full">{{buttonMsg}}</ion-button>
+            <ion-button (click)="clearChatRes()" shape="round" size="small" expand="full">clear Chat response</ion-button>
 
             @if(showMessage){
             <div class="message-display">
@@ -123,7 +120,7 @@
                 <tbody>
                   <tr *ngFor="let item of apiService.chatResponseJobDetails">
                     @for ( job of item?.jobs; track job.id){
-                    <td id="open-toast" (click)="openJobDetail(job)" style="padding: 8px;">{{job?.companyName}}
+                    <td id="open-toast" (click)="openJobDetail(item)" style="padding: 8px;">{{job?.companyName}}
                     </td>
                     }
                   </tr>
