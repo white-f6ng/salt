@@ -113,7 +113,4 @@ export class HomePage implements OnInit, AfterViewInit {
     await Preferences.remove({ key: 'name' });
   };
 
-  
-
-
 }

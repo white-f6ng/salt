@@ -2,7 +2,7 @@
     @if(controls && controls.length){
     <h5>Personal Information</h5>
     @for( input of controls; track input) {
-    @if(input.type =="Text Box"){
+    @if(input.type =="Text Box" || input.type =="date"){
     <ion-input #ioninput name="{{input.name}}" class="wrap-label" [labelPlacement]="'stacked'" label="{{input.label}}"
         type="{{input.type}}" [(ngModel)]="userDetails[input.name]"></ion-input>
     }
@@ -14,7 +14,7 @@
             @for(option of input.options; track option) {
 
             <ion-item>
-                <ion-label class="wrap-label">{{ option.name }}</ion-label>
+                <ion-label class="wrap-label">{{ option.value }}</ion-label>
                 <ion-radio slot="start" [value]="option.value"></ion-radio>
             </ion-item>
             }
@@ -22,11 +22,23 @@
     </ion-radio-group>
     }
 
+    @if(input.type == "Check Box"){
+    <ion-label class="wrap-label">{{ input.label }}</ion-label>
+    <ion-list>
+        @for(option of input.options; track option) {
+        <ion-item>
+            <ion-checkbox #ionCheckboxInput slot="start" [value]="option.value">
+            </ion-checkbox>
+            <ion-label class="wrap-label">{{ option.value }}</ion-label>
+        </ion-item>
+        }
+    </ion-list>
     }
 
-    <ion-button fill="clear" (click)="onSubmit()" size="small">
+}
+<ion-button fill="clear" (click)="onSubmit()" size="small">
 
-        Process
-    </ion-button>
+    Process
+</ion-button>
     }
 </div>

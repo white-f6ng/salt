@@ -151,7 +151,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       setTimeout(() => {
         this.messageContent = "";
         this.router.navigate([""]);
-      }, 3000);
+      }, 1000);
     }
   }
 
@@ -257,7 +257,6 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   async clearChatRes() {
     for (const key of this.apiService.chatResponseJobDetails) {
-      this.detialComponentRef.canProcess = true;
       await this.apiService.applyChatResponse(key);
     }
   }

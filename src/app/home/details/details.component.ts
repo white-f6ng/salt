@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, computed, effect, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ApiService } from 'src/app/services/apiservice.service';
-import { IonInput, IonButton, IonList, IonLabel, IonItem, IonRadio, IonRadioGroup } from "@ionic/angular/standalone";
+import { IonInput, IonButton, IonList, IonLabel, IonItem, IonRadio, IonRadioGroup, IonCheckbox } from "@ionic/angular/standalone";
 import { FormsModule } from '@angular/forms';
 import { getlocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
 import { Preferences } from '@capacitor/preferences';
@@ -9,7 +9,7 @@ import { Preferences } from '@capacitor/preferences';
   selector: 'app-details',
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.scss'],
-  imports: [IonRadioGroup, IonButton, IonInput, FormsModule, IonList, IonLabel, IonItem, IonRadio]
+  imports: [IonCheckbox, IonRadioGroup, IonButton, IonInput, FormsModule, IonList, IonLabel, IonItem, IonRadio]
 })
 export class DetailsComponent implements OnInit, AfterViewInit {
 
@@ -23,9 +23,9 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   canDetailsShow: boolean = false;
   @ViewChildren('ioninput') ioninput!: QueryList<IonInput>;
   @ViewChildren('ionRadioInput') ionRadioInput!: QueryList<IonInput>;
+  @ViewChildren('ionCheckboxInput') ionCheckboxInput!: QueryList<IonCheckbox>;
   options: any = [];
   resultDetails: any = [];
-  applyData: any = {};
   canProcess: boolean = false;
   private isProcessing = false;
 
@@ -57,11 +57,11 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.chatResponse();
+    this.applyJobs();
   }
 
   chatResponse() {
-    // this.apiService.questionnaireIn$.subscribe(result => {
+    // this.apiService.questionnaireIn$.subscribe(async result => {
     //   if (result) {
     //     if (this.isProcessing || !result) return;
 
@@ -75,7 +75,7 @@ export class DetailsComponent implements OnInit, AfterViewInit {
     //     if (matchedQuestion) {
 
     //       let key = matchedQuestion?.questionName.replace(/[\s/()?]+/g, "");
-    //       let storedData = this.getUserDetails(key);
+    //       let storedData = (await getlocalStorageData(key)).value;
     //       if (storedData != null) {
     //         if (this.canProcess) {
     //           this.apiService.replyChatBotResponse(result?.chatbotResponse, storedData);
@@ -83,7 +83,7 @@ export class DetailsComponent implements OnInit, AfterViewInit {
     //       } else {
 
     //         let options;
-    //         if (matchedQuestion.questionType === "Radio Button" || matchedQuestion.questionType === "List Menu") {
+    //         if (["List Menu", "Radio Button", "Check Box"].includes(matchedQuestion.questionType)) {
     //           options = result?.chatbotResponse?.options;
     //         }
 
@@ -94,67 +94,68 @@ export class DetailsComponent implements OnInit, AfterViewInit {
     //       }
 
     //     }
+    //     this.isProcessing = false;
 
     //   }
     // })
-    this.apiService.questionnaireIn$.subscribe(result => {
-      if (!result || this.isProcessing) return;
-      this.isProcessing = true;
+    // this.apiService.questionnaireIn$.subscribe(result => {
+    //   if (!result || this.isProcessing) return;
+    //   this.isProcessing = true;
 
-      const question = result?.chatbotResponse?.speechResponse.filter((x: any) => x.response);
-      const questionnaire = result.jobs.find((x: any) => x.questionnaire)?.questionnaire;
+    //   const question = result?.chatbotResponse?.speechResponse.filter((x: any) => x.response);
+    //   const questionnaire = result.jobs.find((x: any) => x.questionnaire)?.questionnaire;
 
-      const matchedQuestion = questionnaire?.find((q: any) =>
-        question?.some((resp: any) => resp.response === q.questionName)
-      );
+    //   const matchedQuestion = questionnaire?.find((q: any) =>
+    //     question?.some((resp: any) => resp.response === q.questionName)
+    //   );
 
-      if (matchedQuestion) {
-        const key = matchedQuestion.questionName.replace(/[\s/()?]+/g, "");
+    //   if (matchedQuestion) {
+    //     const key = matchedQuestion.questionName.replace(/[\s/()?]+/g, "");
 
-        this.getUserDetails(key).then(storedData => {
-          if (storedData != null && this.canProcess) {
-            this.apiService.replyChatBotResponse(result?.chatbotResponse, storedData);
-          } else {
-            let options;
-            if (["Radio Button", "List Menu"].includes(matchedQuestion.questionType)) {
-              options = result?.chatbotResponse?.options;
-            }
+    //     this.getUserDetails(key).then(storedData => {
+    //       if (storedData != null && this.canProcess) {
+    //         this.apiService.replyChatBotResponse(result?.chatbotResponse, storedData);
+    //       } else {
+    //         let options;
+    //         if (["Radio Button", "List Menu"].includes(matchedQuestion.questionType)) {
+    //           options = result?.chatbotResponse?.options;
+    //         }
 
-            if (!this.controls.some(x => x.name === key)) {
-              this.controls.push({
-                name: key,
-                label: matchedQuestion.questionName,
-                type: matchedQuestion.questionType,
-                options
-              });
-            }
+    //         if (!this.controls.some(x => x.name === key)) {
+    //           this.controls.push({
+    //             name: key,
+    //             label: matchedQuestion.questionName,
+    //             type: matchedQuestion.questionType,
+    //             options
+    //           });
+    //         }
 
-            this.canDetailsShow = true;
-          }
+    //         this.canDetailsShow = true;
+    //       }
 
-          this.isProcessing = false;
-        }).catch(err => {
-          console.error('Error getting user details:', err);
-          this.isProcessing = false;
-        });
-      } else {
-        this.isProcessing = false;
-      }
-    });
+    //       this.isProcessing = false;
+    //     }).catch(err => {
+    //       console.error('Error getting user details:', err);
+    //       this.isProcessing = false;
+    //     });
+    //   } else {
+    //     this.isProcessing = false;
+    //   }
+    // });
   }
 
   questionnaireResponse() {
-    this.apiService.chatResponseIn$.subscribe(async result => {
-      if (result) {
-        if (!result?.actionType?.length) {
-          this.resultDetails.chatbotResponse.speechResponse = result.speechResponse;
-          this.apiService.questionnaireInSubject.next(this.resultDetails);
-        } else {
-          this.resultDetails.testObj['applyData'] = result.applyData;
-          this.apiService.successResponse(this.resultDetails);
-        }
-      }
-    });
+    // this.apiService.chatResponseIn$.subscribe(async result => {
+    //   if (result) {
+    //     this.resultDetails.chatbotResponse.speechResponse = result.speechResponse;
+    //     this.apiService.questionnaireInSubject.next(this.resultDetails);
+    //     this.resultDetails.testObj['applyData'] = result.applyData;
+    //     this.apiService.successResponse(this.resultDetails);
+    //     // if (result?.actionType?.length >= 2) {
+    //     // } else {
+    //     // }
+    //   }
+    // });
   }
 
   question = computed(() => this.apiService.chatQuest$());
@@ -172,11 +173,58 @@ export class DetailsComponent implements OnInit, AfterViewInit {
     for (const input of allInputs) {
       const value = input.value as any;
       if (value) {
+        
         this.setUserDetails(input.name, value);
         this.controls = this.controls.filter(x => x.name !== input.name);
       }
     }
   }
 
+  applyJobs() {
+    this.apiService.questionnaireIn$.subscribe(async result => {
+      if (result) {
+        let questionnaire = result?.jobs.find((x: any) => x.questionnaire).questionnaire;
+        const jobId = result.jobs[0].jobId;
+        this.resultDetails = result;
+        let applyData: any;
+        applyData = applyData || {};
+        applyData[jobId] = applyData[jobId] || {};
+        applyData[jobId]["answers"] = {};
+
+        for (const [index, key] of questionnaire.entries()) {
+          let keyValue = key.questionName.replace(/[\s/()?]+/g, "");
+          let storedData = await getlocalStorageData(keyValue);
+          if (key.questionType === "acceptance") {
+            storedData.value = JSON.stringify(["Yes"]);
+          }
+          if (storedData.value != null) {
+            let isAllowed = ["Text Box", "date"].some(x => x === key.questionType)
+            if (!isAllowed) {
+              storedData.value = JSON.stringify([storedData.value]);
+            }
+            applyData[jobId]["answers"][key.questionId] = (!isAllowed) ? JSON.parse(storedData.value) : storedData.value;
+
+            if (index == questionnaire.length - 1) {
+              this.resultDetails.testObj['applyData'] = applyData;
+              this.apiService.successResponse(this.resultDetails);
+            }
+
+          } else {
+            let options;
+            if (["List Menu", "Radio Button", "Check Box"].some(x => x === key.questionType)) {
+              options = Object.entries(key.answerOption).map(([key, value]) => ({
+                key,
+                value
+              }));
+            }
+
+            if (!this.controls.some(x => x.name == keyValue)) {
+              this.controls.push({ name: keyValue, label: key?.questionName, type: key.questionType, options: options });
+            }
+          }
+        }
+      }
+    })
+  }
 
 }

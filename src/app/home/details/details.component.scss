@@ -9,3 +9,11 @@
   text-overflow: unset !important;
   display: block !important;
 }
+
+::ng-deep ion-input.wrap-label .label-text-wrapper .label-text {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  display: block !important;
+  line-height: 1.3;
+}

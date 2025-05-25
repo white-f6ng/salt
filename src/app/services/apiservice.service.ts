@@ -272,7 +272,7 @@ export class ApiService {
                     this.count = this.count + 1;
                   } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse) {
                     applySucc.data["testObj"] = obj;
-                    this.applyChatResponse(applySucc?.data);
+                    // this.applyChatResponse(applySucc?.data);
                     this.chatResponseJobDetails = this.chatResponseJobDetails.concat(applySucc?.data) as any;
                   } else {
                     this.allJobDetails = this.allJobDetails.concat(applySucc?.data) as any;
@@ -434,10 +434,12 @@ export class ApiService {
 
     this.dailyCount = applySucc?.data?.quotaDetails?.dailyApplied;
     this.monthlyCount = applySucc?.data?.quotaDetails?.monthlyApplied;
+    if(applySucc?.data?.quotaDetails?.dailyApplied){
+      this.chatResponseJobDetails = this.chatResponseJobDetails.filter(x=>x.jobs[0].jobId !== cr.jobs[0].jobId);
+      this.appliedJobDetails = this.appliedJobDetails.concat(cr); 
+    }
 
   }
-
-
 
 
   async getLovData(query: string) {
