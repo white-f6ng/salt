@@ -169,11 +169,11 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   }
 
   onSubmit() {
-    let allInputs = [...this.ioninput.toArray(), ...this.ionRadioInput.toArray()];
+    let allInputs = [...this.ioninput.toArray(), ...this.ionRadioInput.toArray(), ...this.ionCheckboxInput.toArray()];
     for (const input of allInputs) {
-      const value = input.value as any;
+      let value = input.value as any;
       if (value) {
-        
+        value = JSON.stringify([value]);
         this.setUserDetails(input.name, value);
         this.controls = this.controls.filter(x => x.name !== input.name);
       }
@@ -198,12 +198,14 @@ export class DetailsComponent implements OnInit, AfterViewInit {
             storedData.value = JSON.stringify(["Yes"]);
           }
           if (storedData.value != null) {
-            let isAllowed = ["Text Box", "date"].some(x => x === key.questionType)
-            if (!isAllowed) {
-              storedData.value = JSON.stringify([storedData.value]);
-            }
-            applyData[jobId]["answers"][key.questionId] = (!isAllowed) ? JSON.parse(storedData.value) : storedData.value;
+            // let isAllowed = ["Text Box", "date"].some(x => x === key.questionType)
 
+            // if (!isAllowed) {
+            //   storedData.value = JSON.stringify([storedData.value]);
+            // }
+
+            // applyData[jobId]["answers"][key.questionId] = (!isAllowed) ? JSON.parse(storedData.value) : storedData.value;
+            applyData[jobId]["answers"][key.questionId] = JSON.parse(storedData.value); 
             if (index == questionnaire.length - 1) {
               this.resultDetails.testObj['applyData'] = applyData;
               this.apiService.successResponse(this.resultDetails);

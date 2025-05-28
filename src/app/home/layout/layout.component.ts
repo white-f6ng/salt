@@ -96,27 +96,44 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   }
 
   async beginTheProcess() {
-    let isfirst = 0;
-    await this.apiService.getDashboardData()
-    let timeInterval = Number(this.ionMinutes.value) * 1000;
-    setInterval(() => {
-      let profile = this.apiService.dashboardOutResult.profile[0];
-      if (!isfirst) {
-        profile.summary = this.bodyData.profile.summary.concat(this.ionProfileUpdate?.value as string);
-        isfirst = 1;
-      } else {
-        profile.summary = this.bodyData.profile.summary.split(this.ionProfileUpdate?.value as string)[0];
-        isfirst = 0;
-      }
-      this.processData();
-    }, timeInterval);
+    if (this.apiService.token) {
+      // let isfirst = 0;
+      await this.apiService.getDashboardData()
+      // setInterval(() => {
+      //   let profile = this.apiService.dashboardOutResult.profile[0];
+      //   if (!isfirst) {
+      //     profile.summary = profile.summary.concat(this.ionProfileUpdate?.value as string);
+      //     isfirst = 1;
+      //   } else {
+      //     profile.summary = profile.summary.split(this.ionProfileUpdate?.value as string)[0];
+      //     isfirst = 0;
+      //   }
+        this.processData();
+      // }, timeInterval);
+    } else {
+      this.showMessage = true;
+      this.messageContent = "Your token has been expired, Please login to use this feature."
+      setTimeout(() => {
+        this.messageContent = "";
+        this.router.navigate([""]);
+      }, 1000);
+    }
   }
 
   async processData() {
 
-    let { profile, profileId } = this.apiService.dashboardOutResult
+    let { profile } = this.apiService.dashboardOutResult;
+    let timeInterval = Number(this.ionMinutes.value) * 1000;
 
-    await this.apiService.beginProcess(this.apiService.dashboardOutResult);
+    let data = {};
+    data = {
+      profile: {
+        summary: profile[0].summary,
+      },
+      profileId: profile[0].profileId,
+    }
+
+    await this.apiService.beginProcess(data, this.ionProfileUpdate?.value as string, timeInterval);
   }
 
   submitSearch() {

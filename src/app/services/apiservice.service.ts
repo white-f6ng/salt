@@ -29,32 +29,59 @@ export class ApiService {
 
   private chatQuest = signal<any>(null);
   chatQuest$ = this.chatQuest;
-
+  pageNumber: number = 1;
   constructor(private http: HttpClient) {
 
   }
-  async beginProcess(bodyData: any) {
+  async beginProcess(profile: any, value: string, timeInterval: number) {
     const url = "https://www.naukri.com/cloudgateway-mynaukri/resman-aggregator-services/v1/users/self/fullprofiles";
-
-    const options = {
-      url: url,
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json",
-        accept: "application/json",
-        appid: "105",
-        clientid: "d3skt0p",
-        systemid: "Naukri",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        "x-http-method-override": "PUT",
-        Authorization: `Bearer ${this.token}`,
-      },
-      data: bodyData.profile[0]
-    };
+    let isfirst = 0;
+    // const options = {
+    //   url: url,
+    //   method: 'POST',
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     accept: "application/json",
+    //     appid: "105",
+    //     clientid: "d3skt0p",
+    //     systemid: "Naukri",
+    //     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    //     "x-http-method-override": "PUT",
+    //     Authorization: `Bearer ${this.token}`,
+    //   },
+    //   data: profile
+    // };
 
     try {
-      const response = await CapacitorHttp.request(options);
-      console.log('Response:', response);
+
+      setInterval(async () => {
+        if (!isfirst) {
+          profile.profile.summary = profile.profile.summary.concat(value);
+          isfirst = 1;
+        } else {
+          profile.profile.summary = profile.profile.summary.split(value)[0];
+          isfirst = 0;
+        }
+
+        const options = {
+          url: url,
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+            appid: "105",
+            clientid: "d3skt0p",
+            systemid: "Naukri",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "x-http-method-override": "PUT",
+            Authorization: `Bearer ${this.token}`,
+          },
+          data: profile
+        };
+        const response = await CapacitorHttp.request(options);
+        console.log('Response:', response);
+      }, timeInterval)
+
     } catch (error) {
       console.error('Error:', error);
     }
@@ -152,8 +179,8 @@ export class ApiService {
 
 
     let preTitle = preferedTitle;
-    let pageNumber = 1;
-    searchParams['pageNumber'] = pageNumber;
+
+    searchParams['pageNumber'] = this.pageNumber;
     this.count = 0;
     this.allJobDetails = [];
     this.appliedJobDetails = [];
@@ -179,7 +206,7 @@ export class ApiService {
 
       try {
         const response = await CapacitorHttp.get(options);
-        console.log("Response received for page", pageNumber);
+        console.log("Response received for page", this.pageNumber);
 
         if (response?.data?.jobDetails && response.data.jobDetails.length > 0) {
 
@@ -190,7 +217,7 @@ export class ApiService {
             const job = jobDetails[i];
             const jobApplyUrl = `https://www.naukri.com/jobapi/v4/job/${job.jobId
               }?microsite=y&src=jobsearchDesk&sid=${sid}&xp=${i + 1
-              }&px=${pageNumber}&nignbevent_src=jobsearchDeskGNB`;
+              }&px=${this.pageNumber}&nignbevent_src=jobsearchDeskGNB`;
 
             const options = {
               url: jobApplyUrl,
@@ -283,7 +310,7 @@ export class ApiService {
 
           }
 
-          pageNumber++;
+          this.pageNumber++;
         } else {
           console.log("No more job details available.");
           break;
@@ -434,9 +461,9 @@ export class ApiService {
 
     this.dailyCount = applySucc?.data?.quotaDetails?.dailyApplied;
     this.monthlyCount = applySucc?.data?.quotaDetails?.monthlyApplied;
-    if(applySucc?.data?.quotaDetails?.dailyApplied){
-      this.chatResponseJobDetails = this.chatResponseJobDetails.filter(x=>x.jobs[0].jobId !== cr.jobs[0].jobId);
-      this.appliedJobDetails = this.appliedJobDetails.concat(cr); 
+    if (applySucc?.data?.quotaDetails?.dailyApplied) {
+      this.chatResponseJobDetails = this.chatResponseJobDetails.filter(x => x.jobs[0].jobId !== cr.jobs[0].jobId);
+      this.appliedJobDetails = this.appliedJobDetails.concat(cr);
     }
 
   }

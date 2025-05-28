@@ -12,7 +12,6 @@
     <ion-radio-group #ionRadioInput name="{{input.name}}" [(ngModel)]="userDetails[input.name]">
         <ion-list>
             @for(option of input.options; track option) {
-
             <ion-item>
                 <ion-label class="wrap-label">{{ option.value }}</ion-label>
                 <ion-radio slot="start" [value]="option.value"></ion-radio>
