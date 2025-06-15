@@ -32,6 +32,11 @@ export class HomePage implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    if (!this.apiService.isLoggingOut) {
+
+      this.getCredentialsAndLogin();
+    }
+    this.apiService.isLoggingOut = false
     this.messageContent = "";
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
@@ -41,10 +46,7 @@ export class HomePage implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    if (!this.apiService.isLoggingOut) {
-      this.getCredentialsAndLogin();
-    }
-    this.apiService.isLoggingOut = false
+
   }
 
   private async getCredentialsAndLogin() {
@@ -53,7 +55,7 @@ export class HomePage implements OnInit, AfterViewInit {
     if (credentials?.username && credentials?.password) {
       this.ionUsername.value = credentials.username;
       this.ionPassword.value = credentials.password;
-      this.login();
+      this.login(true);
     }
   }
 
@@ -65,30 +67,34 @@ export class HomePage implements OnInit, AfterViewInit {
     return this.loginForm.get('password')!;
   }
 
-  async login() {
+  async login(canAllow: boolean = false): Promise<void> {
     const credentials = {
-      username: this.ionUsername.value ?? '',
-      password: this.ionPassword.value ?? ''
+      username: this.ionUsername.value || '',
+      password: this.ionPassword.value || ''
     };
+
     this.setCredentials();
 
-    await this.apiService.login(credentials)
-    if (this.apiService.token) {
-      if (!this.apiService.isLoggingOut) {
-        this.messageContent = "Login successful. Redirecting...";
-        setTimeout(() => {
-          this.messageContent = "";
-          this.router.navigate(['/layout']);
-        }, 500);
-      }
-    } else {
+    await this.apiService.login(credentials);
+
+    if (!this.apiService.token) {
       this.messageContent = "Login failed. Please check your credentials.";
-      setTimeout(() => {
-        this.messageContent = "";
-      }, 2000);
+      setTimeout(() => this.messageContent = "", 2000);
+      return;
     }
 
+    if (this.apiService.isLoggingOut) return;
+
+    this.messageContent = canAllow ? "" : "Login successful. Redirecting...";
+
+    const navigate = () => {
+      this.messageContent = "";
+      this.router.navigate(['/layout']);
+    };
+
+    canAllow ? navigate() : setTimeout(navigate, 500);
   }
+
 
   setCredentials = async () => {
     await Preferences.set({

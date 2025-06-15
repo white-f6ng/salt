@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonButton, IonContent, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSelect, IonSelectOption, IonTab, IonTabBar, IonTabButton, IonTabs, IonToast } from "@ionic/angular/standalone";
 import { ApiService } from 'src/app/services/apiservice.service';
@@ -12,6 +12,7 @@ import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { DetailsComponent } from '../details/details.component';
 import { getlocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
 import { FormsModule } from '@angular/forms';
+import { interval, Subscription } from 'rxjs';
 
 
 
@@ -53,12 +54,22 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   public results: any = [];
 
+  private timer$: Subscription | null = null;
+  time = 0;
+  btnMsg = "Process";
+
+
   constructor(public apiService: ApiService, private router: Router, private platform: Platform,
     private toastController: ToastController,
     private backgroundMode: BackgroundMode,
   ) {
     addIcons({ logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline });
-
+    effect(() => {
+      let count = this.startTimer();
+      if (count) {
+        this.start();
+      }
+    });
   }
 
   ngOnInit() {
@@ -97,19 +108,8 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   async beginTheProcess() {
     if (this.apiService.token) {
-      // let isfirst = 0;
       await this.apiService.getDashboardData()
-      // setInterval(() => {
-      //   let profile = this.apiService.dashboardOutResult.profile[0];
-      //   if (!isfirst) {
-      //     profile.summary = profile.summary.concat(this.ionProfileUpdate?.value as string);
-      //     isfirst = 1;
-      //   } else {
-      //     profile.summary = profile.summary.split(this.ionProfileUpdate?.value as string)[0];
-      //     isfirst = 0;
-      //   }
-        this.processData();
-      // }, timeInterval);
+      this.processData();
     } else {
       this.showMessage = true;
       this.messageContent = "Your token has been expired, Please login to use this feature."
@@ -120,20 +120,41 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     }
   }
 
-  async processData() {
+  start() {
+    this.time = Number(this.ionMinutes.value) * 60 * 1000;
+    if (!this.timer$ && this.time > 0) {
+      this.timer$ = interval(1000).subscribe(() => {
+        if (this.time > 0) {
+          this.time -= 1000;
+        } else {
 
-    let { profile } = this.apiService.dashboardOutResult;
-    let timeInterval = Number(this.ionMinutes.value) * 1000;
-
-    let data = {};
-    data = {
-      profile: {
-        summary: profile[0].summary,
-      },
-      profileId: profile[0].profileId,
+        }
+      });
     }
+  }
 
-    await this.apiService.beginProcess(data, this.ionProfileUpdate?.value as string, timeInterval);
+  startTimer = computed(() => this.apiService.chatQuest$());
+
+  async processData() {
+    if (this.btnMsg === "Process") {
+      this.btnMsg = "Cancel";
+      let { profile } = this.apiService.dashboardOutResult;
+      let timeInterval = Number(this.ionMinutes.value) * 60 * 1000;
+      this.start();
+      let data = {};
+      data = {
+        profile: {
+          summary: profile[0].summary,
+        },
+        profileId: profile[0].profileId,
+      }
+
+      await this.apiService.beginProcess(data, this.ionProfileUpdate?.value as string, timeInterval);
+    } else {
+      clearInterval(this.apiService.intervalRef);
+      this.btnMsg ="Process";
+      this.time = 0;
+    }
   }
 
   submitSearch() {

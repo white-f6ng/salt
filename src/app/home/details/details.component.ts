@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, effect, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, Input, OnChanges, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { ApiService } from 'src/app/services/apiservice.service';
 import { IonInput, IonButton, IonList, IonLabel, IonItem, IonRadio, IonRadioGroup, IonCheckbox } from "@ionic/angular/standalone";
 import { FormsModule } from '@angular/forms';
@@ -11,7 +11,7 @@ import { Preferences } from '@capacitor/preferences';
   styleUrls: ['./details.component.scss'],
   imports: [IonCheckbox, IonRadioGroup, IonButton, IonInput, FormsModule, IonList, IonLabel, IonItem, IonRadio]
 })
-export class DetailsComponent implements OnInit, AfterViewInit {
+export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
 
 
   //#region Variables
@@ -27,7 +27,7 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   options: any = [];
   resultDetails: any = [];
   canProcess: boolean = false;
-  private isProcessing = false;
+  @Input('isChanged') isChanged: boolean = false;
 
 
   //#endregion Variables
@@ -44,12 +44,7 @@ export class DetailsComponent implements OnInit, AfterViewInit {
       HowmanyyearsofexperiencedoyouhaveinHtmlCss: "",
       Whatisyournoticeperiod: "",
     }
-    effect(() => {
-      const msg = this.question();
-      if (msg) {
-        console.log("Component B got message:", msg);
-      }
-    });
+
   }
 
   ngOnInit() {
@@ -59,7 +54,12 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.applyJobs();
   }
-
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isChanged'] && changes['isChanged'].currentValue) {
+      this.controls = [];
+      this.isChanged = changes['isChanged'].currentValue;
+    }
+  }
   chatResponse() {
     // this.apiService.questionnaireIn$.subscribe(async result => {
     //   if (result) {
@@ -158,7 +158,7 @@ export class DetailsComponent implements OnInit, AfterViewInit {
     // });
   }
 
-  question = computed(() => this.apiService.chatQuest$());
+
 
   setUserDetails(key: string, value: string) {
     setlocalStorageData(key, value);
@@ -169,7 +169,7 @@ export class DetailsComponent implements OnInit, AfterViewInit {
   }
 
   onSubmit() {
-    let allInputs = [...this.ioninput.toArray(), ...this.ionRadioInput.toArray(), ...this.ionCheckboxInput.toArray()];
+    let allInputs = [...this.ioninput.toArray(), ...this.ionRadioInput.toArray()];
     for (const input of allInputs) {
       let value = input.value as any;
       if (value) {
@@ -178,6 +178,15 @@ export class DetailsComponent implements OnInit, AfterViewInit {
         this.controls = this.controls.filter(x => x.name !== input.name);
       }
     }
+    let checkBoxInputs = this.ionCheckboxInput.toArray();
+    for (const checkbox of checkBoxInputs) {
+      if (checkbox.checked) {
+        let value = JSON.stringify([checkbox.value]);
+        this.setUserDetails(checkbox.name, value);
+        this.controls = this.controls.filter(x => x.name !== checkbox.name);
+      }
+    }
+
   }
 
   applyJobs() {
@@ -205,7 +214,7 @@ export class DetailsComponent implements OnInit, AfterViewInit {
             // }
 
             // applyData[jobId]["answers"][key.questionId] = (!isAllowed) ? JSON.parse(storedData.value) : storedData.value;
-            applyData[jobId]["answers"][key.questionId] = JSON.parse(storedData.value); 
+            applyData[jobId]["answers"][key.questionId] = JSON.parse(storedData.value);
             if (index == questionnaire.length - 1) {
               this.resultDetails.testObj['applyData'] = applyData;
               this.apiService.successResponse(this.resultDetails);

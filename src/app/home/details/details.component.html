@@ -26,7 +26,7 @@
     <ion-list>
         @for(option of input.options; track option) {
         <ion-item>
-            <ion-checkbox #ionCheckboxInput slot="start" [value]="option.value">
+            <ion-checkbox name="{{input.name}}" #ionCheckboxInput slot="start" [value]="option.value">
             </ion-checkbox>
             <ion-label class="wrap-label">{{ option.value }}</ion-label>
         </ion-item>

@@ -22,7 +22,19 @@
             placeholder="Enter time in minutes"></ion-input>
         </ion-item>
 
-        <ion-button size="small" (click)="beginTheProcess()" shape="round" expand="full">Process</ion-button>
+        <ion-button size="small" (click)="beginTheProcess()" shape="round" expand="full">{{btnMsg}}</ion-button>
+        @if(time){
+        <h2>{{ time | date:'HH:mm:ss':'UTC' }}</h2>
+
+        <p>
+          {{ apiService.apiresponseData.content }}
+        </p>
+        <p>
+          <strong>Previous Status:</strong> {{ apiService.apiresponseData.status }}
+        </p>
+
+        }
+
       </div>
     </ion-content>
   </ion-tab>
@@ -64,10 +76,11 @@
 
         <div class="overlay-ref">
           <div class="content">
-            <app-details #detialComponentRef></app-details>
+            <app-details #detialComponentRef [isChanged]="this.apiService.canProceed"></app-details>
 
             <ion-button (click)="submitSearch()" shape="round" size="small" expand="full">{{buttonMsg}}</ion-button>
-            <ion-button (click)="clearChatRes()" shape="round" size="small" expand="full">clear Chat response</ion-button>
+            <ion-button (click)="clearChatRes()" shape="round" size="small" expand="full">clear Chat
+              response</ion-button>
 
             @if(showMessage){
             <div class="message-display">
@@ -127,10 +140,10 @@
                 </tbody>
               </table>
             </ul>
-            <ion-button fill="clear" (click)="exportToExcel()" size="small">
+            <!-- <ion-button fill="clear" (click)="exportToExcel()" size="small">
               <ion-icon slot="start" name="download-outline"></ion-icon>
               Export
-            </ion-button>
+            </ion-button> -->
             }
             @if( apiService.errorMsg && apiService.errorMsg.length){
             <div class="error-list">
