@@ -13,12 +13,12 @@
         </div>
 
         <ion-item>
-          <ion-input label="Profile Update" labelPlacement="floating" type="text" #ionProfileUpdate
+          <ion-input label="Profile Update" name="ionProfileUpdat" labelPlacement="floating" type="text" #ionProfileUpdate
             placeholder="Profile Update" class="item"></ion-input>
         </ion-item>
 
         <ion-item>
-          <ion-input label="Minutes" #ionMinutes type="number" class="item"
+          <ion-input label="Minutes" #ionMinutes type="number" name="ionMinute" class="item"
             placeholder="Enter time in minutes"></ion-input>
         </ion-item>
 
@@ -155,6 +155,12 @@
             }
           </div>
         </div>
+        <p class="edit-storage" (click)="openPreference()">
+          <ion-icon name="file-tray" class="header-icon" aria-label="Edit Preferences"></ion-icon>
+          Edit Storage
+        </p>
+
+
       </div>
     </ion-content>
   </ion-tab>

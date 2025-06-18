@@ -1,0 +1,26 @@
+.edit-icon {
+  font-size: 18px;
+  color: #666;
+}
+.edit-icon:hover{
+    color: aliceblue;
+    cursor: pointer;
+}
+.back-container {
+  display: flex;
+  justify-content: flex-start;
+  padding: 16px;
+}
+
+.back-icon {
+  font-size: 24px;
+  color: var(--ion-color-primary);
+  cursor: pointer;
+}
+ion-fab-button {
+  --background: var(--ion-color-primary);
+  --color: white;
+}
+.back-fab{
+    font-size: 35px;
+}

@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, computed, effect, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonButton, IonContent, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSelect, IonSelectOption, IonTab, IonTabBar, IonTabButton, IonTabs, IonToast } from "@ionic/angular/standalone";
+import { IonButton, IonContent, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSelect, IonSelectOption, IonTab, IonTabBar, IonTabButton, IonTabs, IonToast, IonTitle, IonToolbar, IonHeader } from "@ionic/angular/standalone";
 import { ApiService } from 'src/app/services/apiservice.service';
 import { Platform, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline, fileTray } from 'ionicons/icons';
 import { CommonModule } from '@angular/common';
 import { Preferences } from '@capacitor/preferences';
 import { Clipboard } from '@capacitor/clipboard';
@@ -63,11 +63,16 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     private toastController: ToastController,
     private backgroundMode: BackgroundMode,
   ) {
-    addIcons({ logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline });
+    addIcons({ logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline, fileTray });
     effect(() => {
       let count = this.startTimer();
       if (count) {
         this.start();
+      }
+      let session = this.sessionExpired();
+      if (session) {
+        this.messageContent = "";
+        this.router.navigate(['']);
       }
     });
   }
@@ -80,6 +85,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.getLocalStorage();
+    this.loadPreferences();
   }
 
   startBackgroundTask() {
@@ -110,6 +116,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     if (this.apiService.token) {
       await this.apiService.getDashboardData()
       this.processData();
+      this.setLocalsotrageData();
     } else {
       this.showMessage = true;
       this.messageContent = "Your token has been expired, Please login to use this feature."
@@ -126,14 +133,13 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       this.timer$ = interval(1000).subscribe(() => {
         if (this.time > 0) {
           this.time -= 1000;
-        } else {
-
         }
       });
     }
   }
 
   startTimer = computed(() => this.apiService.chatQuest$());
+  sessionExpired = computed(() => this.apiService.tokenExpired$());
 
   async processData() {
     if (this.btnMsg === "Process") {
@@ -152,14 +158,14 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       await this.apiService.beginProcess(data, this.ionProfileUpdate?.value as string, timeInterval);
     } else {
       clearInterval(this.apiService.intervalRef);
-      this.btnMsg ="Process";
+      this.btnMsg = "Process";
       this.time = 0;
     }
   }
 
   submitSearch() {
     let preferedTitle: string[] = [];
-
+    this.getAllPreferences();
     if (typeof this.userDetails.PreferedTitle === 'string') {
       preferedTitle = this.userDetails.PreferedTitle.split(',');
     } else {
@@ -270,17 +276,17 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   getLocalStorage = async () => {
     for (const key of Object.keys(this.userDetails)) {
-      const result = await getlocalStorageData(key);
+      const result = (await getlocalStorageData(key)).getSotrage;
       if (result.value !== null) {
         this.userDetails[key] = result.value;
       }
     }
-    let searchBar = await getlocalStorageData('SearchBar');
+    let searchBar = (await getlocalStorageData('SearchBar')).getSotrage;
     if (searchBar.value !== null) {
       this.searchBar.value = searchBar.value;
       this.selectResult(searchBar.value);
     }
-    let jobAge = await getlocalStorageData('JobAge');
+    let jobAge = (await getlocalStorageData('JobAge')).getSotrage;
     if (jobAge.value !== null) {
       this.selectRef.value = jobAge.value;
     }
@@ -298,4 +304,37 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       await this.apiService.applyChatResponse(key);
     }
   }
+
+  async getAllPreferences() {
+    const { keys } = await Preferences.keys();
+    const all: { [key: string]: any } = {};
+    for (const key of keys) {
+      const { value } = await Preferences.get({ key });
+      try {
+        all[key] = JSON.parse(value!);
+      } catch {
+        all[key] = value;
+      }
+    }
+
+  }
+
+  openPreference() {
+    this.router.navigate(['/preferences']);
+  }
+
+  async setLocalsotrageData() {
+    let localValue = [this.ionProfileUpdate, this.ionMinutes]
+    for (let i = 0; i < localValue.length; i++) {
+      const input = localValue[i];
+      setlocalStorageData(input.name, input.value as string);
+    }
+  }
+
+  async loadPreferences() {
+    this.ionMinutes.value = (await getlocalStorageData('ionMinute'))?.getSotrage.value;
+    this.ionProfileUpdate.value = (await getlocalStorageData('ionProfileUpdate'))?.getSotrage.value;
+  }
+
+
 }

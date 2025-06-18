@@ -26,34 +26,25 @@
     <form [formGroup]="loginForm" (ngSubmit)="login()">
 
       <ion-item>
-        <ion-input
-          formControlName="username"
-          label="Username"
-          labelPlacement="floating"
-          #ionUsername
+        <ion-input formControlName="username" label="Username" labelPlacement="floating" #ionUsername
           placeholder="Enter Username">
         </ion-input>
       </ion-item>
       <ion-text color="danger" *ngIf="username.invalid && (username.dirty || username.touched)">
         <p *ngIf="username.errors?.['required']">Username is required</p>
       </ion-text>
-    
+
       <ion-item>
-        <ion-input
-          formControlName="password"
-          label="Password"
-          labelPlacement="floating"
-          placeholder="Enter Password"
-          #ionPassword
-          type="password">
+        <ion-input formControlName="password" label="Password" labelPlacement="floating" placeholder="Enter Password"
+          #ionPassword type="password">
         </ion-input>
       </ion-item>
       <ion-text color="danger" *ngIf="password.invalid && (password.dirty || password.touched)">
         <p *ngIf="password.errors?.['required']">Password is required</p>
       </ion-text>
-    
+
       <ion-button shape="round" type="submit" [disabled]="loginForm.invalid">Login</ion-button>
-    
+
     </form>
 
     <!-- <ion-button (click)="login()" shape="round">Login</ion-button> -->

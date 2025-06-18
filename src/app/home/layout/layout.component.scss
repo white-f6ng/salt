@@ -280,3 +280,21 @@ ion-toast.custom-toast::part(button) {
   color: #030207;
   font-size: 15px;
 }
+.edit-storage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: var(--ion-color-medium);
+  cursor: pointer;
+}
+
+.header-icon {
+  font-size: 20px;
+  color: var(--ion-color-primary);
+  transition: color 0.2s ease;
+}
+
+.edit-storage:hover .header-icon {
+  color: var(--ion-color-secondary);
+}

@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Preferences Storage</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    @for (key of keys; track key) {
+    <ion-item>
+      <ion-label>
+        <strong>{{ key }}</strong>:
+        @if(LSDataSource[key].type =="Text Box" || LSDataSource[key].type =="date"){
+        <ion-input #ioninput name="{{key}}" class="wrap-label" [labelPlacement]="'stacked'" label="{{key}}"
+          type="{{LSDataSource[key].type}}" [(ngModel)]="LSDataSource[key].value"></ion-input>
+        }
+      </ion-label>
+      <ion-icon slot="end" name="create" class="trash"></ion-icon>
+    </ion-item>
+    }
+  </ion-list>
+
+  <ion-button fill="clear" (click)="onSubmit()" size="small">
+
+    Process
+</ion-button>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="back-fab">
+    <ion-icon (click)="goBack()" name="arrow-undo"></ion-icon>
+  </ion-fab>
+</ion-content>

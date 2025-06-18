@@ -20,4 +20,7 @@ export const routes: Routes = [
   {
     path: 'details', loadComponent: () => import('./home/details/details.component').then((m) => m.DetailsComponent)
   },
+  {
+    path: 'preferences', loadComponent: () => import('./home/preferences/preferences-viewer.component').then((m) => m.PreferencesViewerComponent)
+  }
 ];

@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, computed, effect, OnInit, ViewChild } from '@angular/core';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonInput, IonButton, IonLabel, IonIcon, IonText } from '@ionic/angular/standalone';
 import { ApiService } from '../services/apiservice.service';
 import { Router } from '@angular/router';
@@ -7,10 +7,6 @@ import { Preferences } from '@capacitor/preferences';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { checkmarkCircle, closeCircle } from 'ionicons/icons';
-
-
-
-
 
 @Component({
   selector: 'app-home',
@@ -118,5 +114,6 @@ export class HomePage implements OnInit, AfterViewInit {
   removeName = async () => {
     await Preferences.remove({ key: 'name' });
   };
+
 
 }

@@ -22,7 +22,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
   allJobDetails: any = [];
   canDetailsShow: boolean = false;
   @ViewChildren('ioninput') ioninput!: QueryList<IonInput>;
-  @ViewChildren('ionRadioInput') ionRadioInput!: QueryList<IonInput>;
+  @ViewChildren('ionRadioInput') ionRadioInput!: QueryList<IonRadio>;
   @ViewChildren('ionCheckboxInput') ionCheckboxInput!: QueryList<IonCheckbox>;
   options: any = [];
   resultDetails: any = [];
@@ -173,6 +173,8 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
     for (const input of allInputs) {
       let value = input.value as any;
       if (value) {
+        let matchedObj = this.controls.find(x => x.name === input.name);
+        value = `${value}|${matchedObj?.type}`
         value = JSON.stringify([value]);
         this.setUserDetails(input.name, value);
         this.controls = this.controls.filter(x => x.name !== input.name);
@@ -202,7 +204,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
 
         for (const [index, key] of questionnaire.entries()) {
           let keyValue = key.questionName.replace(/[\s/()?]+/g, "");
-          let storedData = await getlocalStorageData(keyValue);
+          let storedData = (await getlocalStorageData(keyValue)).getSotrage;
           if (key.questionType === "acceptance") {
             storedData.value = JSON.stringify(["Yes"]);
           }

@@ -30,6 +30,11 @@ export class ApiService {
 
   private chatQuest = signal<any>(null);
   chatQuest$ = this.chatQuest;
+
+  private tokenExpired = signal<any>(null);
+  tokenExpired$ = this.tokenExpired;
+
+
   pageNumber: number = 1;
   constructor(private http: HttpClient) {
 
@@ -69,6 +74,9 @@ export class ApiService {
         };
         const response = await CapacitorHttp.request(options);
         this.apiresponseData.status = response.status;
+        if (response.status === 401) {
+          this.tokenExpired.update(value => true);
+        }
         console.log('Response:', response);
         this.chatQuest.update(value => value + 1);
       }, timeInterval);
@@ -289,15 +297,12 @@ export class ApiService {
                           throw new Error("Daily quota of jobs exceeded");
                         }
 
-
                         this.appliedJobDetails = this.appliedJobDetails.concat(applySucc.data) as any;
-
-
 
                         this.count = this.count + 1;
                       } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse) {
                         applySucc.data["testObj"] = obj;
-                        this.applyChatResponse(applySucc?.data);
+                        // this.applyChatResponse(applySucc?.data);
                         this.chatResponseJobDetails = this.chatResponseJobDetails.concat(applySucc?.data) as any;
                       } else {
                         this.allJobDetails = this.allJobDetails.concat(applySucc?.data) as any;
