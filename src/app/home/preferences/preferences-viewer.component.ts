@@ -5,7 +5,7 @@ import { Preferences } from '@capacitor/preferences';
 import { IonItem, IonLabel, IonHeader, IonContent, IonTitle, IonToolbar, IonList, IonIcon, IonFab, IonFabButton, IonInput, IonButton } from "@ionic/angular/standalone";
 import { addIcons } from 'ionicons';
 import { create, pencil, trash, trashBin, trashSharp, arrowUndo } from 'ionicons/icons';
-import { getlocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
+import { getLocalStorageData, removeLocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
 
 @Component({
   selector: 'app-preferences-viewer',
@@ -29,16 +29,19 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit {
   }
 
   async getPreferences() {
+    // await Preferences.clear();
     const { keys } = await Preferences.keys();
     this.keys = keys;
 
     for (const key of keys) {
-      const { getSotrage, splittedValue } = await getlocalStorageData(key);;
-      let value = getSotrage?.value;
+      let locStorage = await getLocalStorageData(key);;
+      let value = locStorage?.value;
+      let type = locStorage?.type ?? "Text box";
+
       try {
-        this.LSDataSource[key] = { type: splittedValue!, value: JSON.parse(value!) };
+        this.LSDataSource[key] = { type: type || "", value: value };
       } catch {
-        this.LSDataSource[key] = { type: splittedValue!, value };
+        this.LSDataSource[key] = { type: type || "", value };
       }
     }
   }
@@ -53,11 +56,14 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit {
       let value = input.value as any;
       if (value) {
         let matchedObj = this.LSDataSource[input.name];
-        value = `${value}|${matchedObj?.type}`
         value = JSON.stringify([value]);
-        setlocalStorageData(input.name, value);
+        setlocalStorageData(input.name, value, matchedObj?.type);
       }
     }
+  }
+  clearPreference(data: any) {
+    removeLocalStorageData(data);
 
+    this.keys = this.keys.filter(key => key !== data);
   }
 }

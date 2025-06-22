@@ -5,7 +5,7 @@
       Logout</ion-button>
   </div>
   <!-- Home Tab -->
-  <ion-tab tab="home">
+  <ion-tab tab="home" class="layout-main-pag">
     <ion-content>
       <div id="home-page">
         <div class="example-content">
@@ -39,7 +39,7 @@
     </ion-content>
   </ion-tab>
 
-  <ion-tab tab="search">
+  <ion-tab class="layout-main-pag"  tab="search">
     <ion-content>
       <div id="search-page">
         <div class="example-content">
@@ -79,8 +79,8 @@
             <app-details #detialComponentRef [isChanged]="this.apiService.canProceed"></app-details>
 
             <ion-button (click)="submitSearch()" shape="round" size="small" expand="full">{{buttonMsg}}</ion-button>
-            <ion-button (click)="clearChatRes()" shape="round" size="small" expand="full">clear Chat
-              response</ion-button>
+            <!-- <ion-button (click)="clearChatRes()" shape="round" size="small" expand="full">clear Chat
+              response</ion-button> -->
 
             @if(showMessage){
             <div class="message-display">
@@ -90,11 +90,11 @@
 
             @if(apiService.count){
             <span class="center-text">Applied: {{apiService.count}}</span>
-            @if(apiService.dailyCount && apiService.monthlyCount){
-            <span class="center-text">Daily Applied: {{apiService.dailyCount}}</span>
-            <span class="center-text">Monthly Applied: {{apiService.monthlyCount}}</span>
             }
-            }
+          @if(apiService.dailyCount && apiService.monthlyCount){
+          <span class="center-text">Daily Applied: {{apiService.dailyCount}}</span>
+          <span class="center-text">Monthly Applied: {{apiService.monthlyCount}}</span>
+          }
 
             @if(apiService.appliedJobDetails && apiService.appliedJobDetails.length){
             <div class="applied-list">
@@ -122,7 +122,7 @@
             }
 
             @if(apiService.chatResponseJobDetails && apiService.chatResponseJobDetails.length){
-            <p>Char Response:</p>
+            <p>Chat Response:</p>
             <ul>
               <table border="1" style="width: 100%; border-collapse: collapse;">
                 <thead>

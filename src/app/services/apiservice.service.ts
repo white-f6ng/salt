@@ -34,6 +34,9 @@ export class ApiService {
   private tokenExpired = signal<any>(null);
   tokenExpired$ = this.tokenExpired;
 
+  private validation = signal<any>(null);
+  validation$ = this.validation;
+
 
   pageNumber: number = 1;
   constructor(private http: HttpClient) {
@@ -120,14 +123,14 @@ export class ApiService {
       noOfResults: 20,
       urlType: "search_by_key_loc",
       searchType: "adv",
-      location: location.toLowerCase(),
-      keyword: skills.toLowerCase(),
+      location: location?.toLowerCase(),
+      keyword: skills?.toLowerCase(),
       sort: "r",
       pageNo: pageNumber,
       experience: experience,
       jobAge: jobAge,
-      k: skills.toLowerCase(),
-      l: location.toLowerCase(),
+      k: skills?.toLowerCase(),
+      l: location?.toLowerCase(),
       nignbevent_src: "jobsearchDeskGNB",
       seoKey: location
         ? (skills.split(' ').length > 1
@@ -176,7 +179,7 @@ export class ApiService {
 
   async searchJobs(searchParams: any) {
     let { skills, experience, location, jobAge, preferedTitle } = searchParams;
-
+    this.pageNumber = 1;
 
     let preTitle = preferedTitle;
 
@@ -187,7 +190,7 @@ export class ApiService {
     this.chatResponseJobDetails = [];
 
 
-    while (this.canProceed && true) {
+    while (this.canProceed) {
       let url = this.buildJobSearchUrl(searchParams);
 
       const options = {
@@ -236,15 +239,15 @@ export class ApiService {
 
             const responseJobApply = await CapacitorHttp.get(options);
 
-            if (!responseJobApply?.data?.microsite) {
+            if (!responseJobApply?.data?.microsite && this.canProceed) {
               let resJobDetails = responseJobApply?.data?.jobDetails;
               const jobTitle = resJobDetails?.title?.toLowerCase();
-              if (jobTitle) {
+              if (jobTitle && this.canProceed) {
 
                 const hasMatch = preTitle.some((x: string) => jobTitle.includes(x.toLowerCase()) || resJobDetails?.keySkills?.preferred.some((y: any) => y.label.toLowerCase().includes(x)));
-                if (resJobDetails) {
+                if (resJobDetails && this.canProceed) {
                   if (!resJobDetails?.applyRedirectUrl
-                    && hasMatch) {
+                    && (!preTitle?.length || hasMatch)) {
                     let jobApply = `https://www.naukri.com/cloudgateway-workflow/workflow-services/apply-workflow/v1/apply`;
 
                     let obj = {
@@ -281,7 +284,7 @@ export class ApiService {
                       },
                       data: obj,
                     }
-                    if (this.appliedJobDetails.length === 0 ||
+                    if (this.canProceed && !this.appliedJobDetails.length ||
                       this.appliedJobDetails.every(x => x.jobs[0].jobId !== resJobDetails.jobId)) {
 
                       let applySucc = await CapacitorHttp.post(headers);
@@ -290,7 +293,7 @@ export class ApiService {
                         this.dailyCount = quotaDetails?.dailyApplied;
                         this.monthlyCount = quotaDetails?.monthlyApplied;
                       }
-                      if (!applySucc?.data?.chatbotResponse) {
+                      if (!applySucc?.data?.chatbotResponse&& this.canProceed) {
 
                         if (applySucc?.data?.message?.statusCode == 403) {
 
@@ -300,7 +303,8 @@ export class ApiService {
                         this.appliedJobDetails = this.appliedJobDetails.concat(applySucc.data) as any;
 
                         this.count = this.count + 1;
-                      } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse) {
+                      } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse &&
+                        this.chatResponseJobDetails.every(x => x.jobs[0].jobId !== applySucc?.data?.jobs[0]?.jobId) ) {
                         applySucc.data["testObj"] = obj;
                         // this.applyChatResponse(applySucc?.data);
                         this.chatResponseJobDetails = this.chatResponseJobDetails.concat(applySucc?.data) as any;
@@ -462,6 +466,13 @@ export class ApiService {
 
 
     let applySucc = await CapacitorHttp.post(headers);
+    let jobId = cr.jobs[0].jobId;
+    let status = applySucc?.data;
+    if (applySucc.data.applyStatus[jobId] === 406) {
+      let validationErrors = status?.jobs[0]?.validationError;
+      this.validation.update(value => validationErrors);
+
+    }
 
     this.dailyCount = applySucc?.data?.quotaDetails?.dailyApplied;
     this.monthlyCount = applySucc?.data?.quotaDetails?.monthlyApplied;

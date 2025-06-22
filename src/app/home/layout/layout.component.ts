@@ -2,7 +2,7 @@ import { AfterViewInit, Component, computed, effect, OnInit, QueryList, ViewChil
 import { Router } from '@angular/router';
 import { IonButton, IonContent, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSelect, IonSelectOption, IonTab, IonTabBar, IonTabButton, IonTabs, IonToast, IonTitle, IonToolbar, IonHeader } from "@ionic/angular/standalone";
 import { ApiService } from 'src/app/services/apiservice.service';
-import { Platform, ToastController } from '@ionic/angular';
+import { Platform, ToastController,AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline, fileTray } from 'ionicons/icons';
 import { CommonModule } from '@angular/common';
@@ -10,7 +10,7 @@ import { Preferences } from '@capacitor/preferences';
 import { Clipboard } from '@capacitor/clipboard';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { DetailsComponent } from '../details/details.component';
-import { getlocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
+import { getLocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
 import { FormsModule } from '@angular/forms';
 import { interval, Subscription } from 'rxjs';
 
@@ -38,14 +38,6 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   messageContent: string = "";
   buttonMsg: string = "Submit";
   selectedValue: String = "";
-  bodyData = {
-    profile: {
-      summary:
-        "Passionate Angular developer with 2.5 years of experience in creating dynamic, responsive web applications. Proficient in Angular, JavaScript, TypeScript, HTML, and CSS, with a solid understanding of front-end development and UX/UI best practices. Additionally, have basic knowledge of MVC architecture using C# .Net, allowing for effective collaboration in full-stack environments. Adept at building scalable, high-performance solutions and working closely with cross-functional teams to meet project goals. Eager to expand my skills and contribute to innovative development projects",
-    },
-    profileId: "5d1d9111d83e31fd4c4c5af2761a478a57e6da4935a9e7c2fcc93b141dd0abb8",
-  };
-
   userDetails: any = {
     Experience: "",
     prefLocation: "",
@@ -57,12 +49,13 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   private timer$: Subscription | null = null;
   time = 0;
   btnMsg = "Process";
+  jobDeatils: any;
 
 
   constructor(public apiService: ApiService, private router: Router, private platform: Platform,
     private toastController: ToastController,
-    private backgroundMode: BackgroundMode,
-  ) {
+    private alertController: AlertController,
+    private backgroundMode: BackgroundMode) {
     addIcons({ logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline, fileTray });
     effect(() => {
       let count = this.startTimer();
@@ -73,6 +66,11 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       if (session) {
         this.messageContent = "";
         this.router.navigate(['']);
+      }
+      let isValid = this.isValid(); {
+        if (isValid) {
+          this.presentValidationAlert(isValid);
+        }
       }
     });
   }
@@ -114,7 +112,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   async beginTheProcess() {
     if (this.apiService.token) {
-      await this.apiService.getDashboardData()
+      await this.apiService.getDashboardData();
       this.processData();
       this.setLocalsotrageData();
     } else {
@@ -140,6 +138,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   startTimer = computed(() => this.apiService.chatQuest$());
   sessionExpired = computed(() => this.apiService.tokenExpired$());
+  isValid = computed(() => this.apiService.validation$());
 
   async processData() {
     if (this.btnMsg === "Process") {
@@ -226,7 +225,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     if (this.platform.is('capacitor')) {
       try {
         await Clipboard.write({ string: text });
-        this.presentToast();
+        this.presentToast('Copied to clipboard', 'success', 'checkmarkCircleOutline');
       } catch (err) {
         console.error('Failed to copy using Capacitor Clipboard:', err);
       }
@@ -240,12 +239,13 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     }
   }
 
-  async presentToast() {
+  async presentToast(message: string, color: string, icon: string) {
     const toast = await this.toastController.create({
-      message: 'Copied to Clipboard',
+      message: message,
       duration: 1000,
       position: 'bottom',
-      icon: 'clipboard-outline'
+      icon: icon,
+      color: color
     });
     await toast.present();
   }
@@ -263,30 +263,30 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       const nameAttr = (await input.getInputElement()).name;
       const value = await input.getInputElement().then(el => el.value);
       if (nameAttr && value) {
-        await setlocalStorageData(nameAttr, value);
+        await setlocalStorageData(nameAttr, value, "text");
       }
     }
     if (this?.searchBar?.value) {
-      await setlocalStorageData('SearchBar', this?.searchBar?.value);
+      await setlocalStorageData('SearchBar', this?.searchBar?.value, "text");
     }
     if (this?.selectRef?.value) {
-      await setlocalStorageData('JobAge', this?.selectRef?.value);
+      await setlocalStorageData('JobAge', this?.selectRef?.value, "text");
     }
   }
 
   getLocalStorage = async () => {
     for (const key of Object.keys(this.userDetails)) {
-      const result = (await getlocalStorageData(key)).getSotrage;
+      const result = (await getLocalStorageData(key));
       if (result.value !== null) {
         this.userDetails[key] = result.value;
       }
     }
-    let searchBar = (await getlocalStorageData('SearchBar')).getSotrage;
-    if (searchBar.value !== null) {
+    let searchBar = (await getLocalStorageData('SearchBar'));
+    if (searchBar.value) {
       this.searchBar.value = searchBar.value;
-      this.selectResult(searchBar.value);
+      this.selectResult(searchBar.value!);
     }
-    let jobAge = (await getlocalStorageData('JobAge')).getSotrage;
+    let jobAge = (await getLocalStorageData('JobAge'));
     if (jobAge.value !== null) {
       this.selectRef.value = jobAge.value;
     }
@@ -294,6 +294,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   async openJobDetail(job: any) {
     if (job) {
+      this.jobDeatils = job;
       this.detialComponentRef.canProcess = true;
       await this.apiService.applyChatResponse(job);
     }
@@ -316,7 +317,6 @@ export class LayoutComponent implements OnInit, AfterViewInit {
         all[key] = value;
       }
     }
-
   }
 
   openPreference() {
@@ -327,14 +327,45 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     let localValue = [this.ionProfileUpdate, this.ionMinutes]
     for (let i = 0; i < localValue.length; i++) {
       const input = localValue[i];
-      setlocalStorageData(input.name, input.value as string);
+      setlocalStorageData(input.name, input.value as string, "text");
     }
   }
 
   async loadPreferences() {
-    this.ionMinutes.value = (await getlocalStorageData('ionMinute'))?.getSotrage.value;
-    this.ionProfileUpdate.value = (await getlocalStorageData('ionProfileUpdate'))?.getSotrage.value;
+    this.ionMinutes.value = (await getLocalStorageData('ionMinute'))?.value;
+    this.ionProfileUpdate.value = (await getLocalStorageData('ionProfileUpdate'))?.value;
   }
 
+  // handleValidationMessages(validationErrors: any) {
+
+  //   for (let i = 0; i < validationErrors.length; i++) {
+
+  //     let questionName = this.jobDeatils?.jobs[0]?.questionnaire.find((x: any) => x.questionId ===validationErrors[i]?.field )?.questionName
+
+  //     let message = `${questionName} : ${validationErrors[i].message}`;
+
+  //     this.presentToast(message, 'danger', 'alert-circle');
+      
+  //   }
+
+  // }
+ async presentValidationAlert(validationErrors: any[]) {
+  const errorMessages = validationErrors.map(err => {
+    const questionName = this.jobDeatils?.jobs[0]?.questionnaire.find(
+      (x: any) => x.questionId === err?.field
+    )?.questionName || err?.field;
+
+    return `${questionName}: ${err.message}\n`;
+  });
+
+  const alert = await this.alertController.create({
+    header: 'Validation Errors',
+    message: `${errorMessages.join('\n')}`,
+    cssClass: 'error-alert',
+    buttons: ['OK']
+  });
+
+  await alert.present();
+}
 
 }

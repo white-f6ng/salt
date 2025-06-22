@@ -234,7 +234,7 @@ ion-icon {
 
 .top-bar {
   position: fixed;
-  top: auto;
+  top: 30px;
   right: 10px;
   z-index: 999;
 
@@ -297,4 +297,19 @@ ion-toast.custom-toast::part(button) {
 
 .edit-storage:hover .header-icon {
   color: var(--ion-color-secondary);
+}
+
+.error-alert .alert-message ul {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.error-alert .alert-message li {
+  margin-bottom: 8px;
+  color: #d9534f; // Optional: red color for visibility
+  font-size: 14px;
+}
+
+.layout-main-pag{
+  top: 50px;
 }

@@ -1,8 +1,9 @@
 import { AfterViewInit, Component, computed, effect, Input, OnChanges, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { ApiService } from 'src/app/services/apiservice.service';
-import { IonInput, IonButton, IonList, IonLabel, IonItem, IonRadio, IonRadioGroup, IonCheckbox } from "@ionic/angular/standalone";
+import { IonInput, IonButton, IonList, IonLabel, IonItem, IonRadio, 
+  IonRadioGroup, IonCheckbox } from "@ionic/angular/standalone";
 import { FormsModule } from '@angular/forms';
-import { getlocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
+import { getLocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
 import { Preferences } from '@capacitor/preferences';
 
 @Component({
@@ -13,10 +14,8 @@ import { Preferences } from '@capacitor/preferences';
 })
 export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
 
-
   //#region Variables
 
-  questionnaire: { [key: string]: string } = {};
   controls: { name: string; label: string, type: string, options?: any }[] = [];
   userDetails: any = {};
   allJobDetails: any = [];
@@ -28,23 +27,12 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
   resultDetails: any = [];
   canProcess: boolean = false;
   @Input('isChanged') isChanged: boolean = false;
-
+  jobDetails: any;
 
   //#endregion Variables
 
   constructor(private apiService: ApiService) {
-    this.questionnaire = {
-      FirstName: "",
-      LastName: "",
-      CGPAPercentagelastEdu: "",
-      CurrentCompany: "",
-      WhatisyourcurrentCTCinLakhsperannum: "",
-      WhatisyourexpectedCTCinLakhsperannum: "",
-      HowmanyyearsofexperiencedoyouhaveinAngularFramework: "",
-      HowmanyyearsofexperiencedoyouhaveinHtmlCss: "",
-      Whatisyournoticeperiod: "",
-    }
-
+    
   }
 
   ngOnInit() {
@@ -60,6 +48,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
       this.isChanged = changes['isChanged'].currentValue;
     }
   }
+  
   chatResponse() {
     // this.apiService.questionnaireIn$.subscribe(async result => {
     //   if (result) {
@@ -158,10 +147,8 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
     // });
   }
 
-
-
-  setUserDetails(key: string, value: string) {
-    setlocalStorageData(key, value);
+  setUserDetails(key: string, value: string, type: string) {
+    setlocalStorageData(key, value, type);
   }
 
   getUserDetails(key: string) {
@@ -174,26 +161,25 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
       let value = input.value as any;
       if (value) {
         let matchedObj = this.controls.find(x => x.name === input.name);
-        value = `${value}|${matchedObj?.type}`
-        value = JSON.stringify([value]);
-        this.setUserDetails(input.name, value);
+        this.setUserDetails(input.name, value, matchedObj?.type!);
         this.controls = this.controls.filter(x => x.name !== input.name);
       }
     }
     let checkBoxInputs = this.ionCheckboxInput.toArray();
     for (const checkbox of checkBoxInputs) {
       if (checkbox.checked) {
-        let value = JSON.stringify([checkbox.value]);
-        this.setUserDetails(checkbox.name, value);
+        let value = checkbox.value;
+        this.setUserDetails(checkbox.name, value, "Check Box");
         this.controls = this.controls.filter(x => x.name !== checkbox.name);
       }
     }
-
+    this.apiService.applyChatResponse(this.jobDetails);
   }
 
   applyJobs() {
     this.apiService.questionnaireIn$.subscribe(async result => {
       if (result) {
+        this.jobDetails = result;
         let questionnaire = result?.jobs.find((x: any) => x.questionnaire).questionnaire;
         const jobId = result.jobs[0].jobId;
         this.resultDetails = result;
@@ -201,33 +187,30 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
         applyData = applyData || {};
         applyData[jobId] = applyData[jobId] || {};
         applyData[jobId]["answers"] = {};
+        let canProceed = true;
 
         for (const [index, key] of questionnaire.entries()) {
           let keyValue = key.questionName.replace(/[\s/()?]+/g, "");
-          let storedData = (await getlocalStorageData(keyValue)).getSotrage;
+          let storedData = (await getLocalStorageData(keyValue));
           if (key.questionType === "acceptance") {
             storedData.value = JSON.stringify(["Yes"]);
           }
-          if (storedData.value != null) {
-            // let isAllowed = ["Text Box", "date"].some(x => x === key.questionType)
+          if (storedData.value != null ) {
 
-            // if (!isAllowed) {
-            //   storedData.value = JSON.stringify([storedData.value]);
-            // }
+            const isTextBox = key.questionType === "Text Box";
+            applyData[jobId]["answers"][key.questionId] = isTextBox ? storedData.value : [storedData.value];
 
-            // applyData[jobId]["answers"][key.questionId] = (!isAllowed) ? JSON.parse(storedData.value) : storedData.value;
-            applyData[jobId]["answers"][key.questionId] = JSON.parse(storedData.value);
-            if (index == questionnaire.length - 1) {
+            if (index == questionnaire.length - 1 && canProceed) {
               this.resultDetails.testObj['applyData'] = applyData;
               this.apiService.successResponse(this.resultDetails);
             }
 
           } else {
             let options;
+            canProceed = false;
             if (["List Menu", "Radio Button", "Check Box"].some(x => x === key.questionType)) {
               options = Object.entries(key.answerOption).map(([key, value]) => ({
-                key,
-                value
+                key,value
               }));
             }
 

@@ -7,6 +7,7 @@ import { Preferences } from '@capacitor/preferences';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { checkmarkCircle, closeCircle } from 'ionicons/icons';
+import { getLocalStorageData, setlocalStorageData } from '../core/helpers/utility';
 
 @Component({
   selector: 'app-home',
@@ -28,17 +29,15 @@ export class HomePage implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    if (!this.apiService.isLoggingOut) {
-
-      this.getCredentialsAndLogin();
-    }
-    this.apiService.isLoggingOut = false
-    this.messageContent = "";
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
       password: ['', Validators.required],
     });
-    this.cdr.detectChanges();
+    if (!this.apiService.isLoggingOut) {
+      this.getCredentialsAndLogin();
+    }
+    this.apiService.isLoggingOut = false
+    this.messageContent = "";
   }
 
   ngAfterViewInit(): void {
@@ -52,6 +51,7 @@ export class HomePage implements OnInit, AfterViewInit {
       this.ionUsername.value = credentials.username;
       this.ionPassword.value = credentials.password;
       this.login(true);
+      this.loginForm.patchValue(credentials);
     }
   }
 
@@ -75,7 +75,7 @@ export class HomePage implements OnInit, AfterViewInit {
 
     if (!this.apiService.token) {
       this.messageContent = "Login failed. Please check your credentials.";
-      setTimeout(() => this.messageContent = "", 2000);
+      setTimeout(() => this.messageContent = "", 1000);
       return;
     }
 
@@ -93,20 +93,14 @@ export class HomePage implements OnInit, AfterViewInit {
 
 
   setCredentials = async () => {
-    await Preferences.set({
-      key: 'username',
-      value: this.ionUsername.value as string,
-    });
+    setlocalStorageData('username', this.ionUsername.value as string, 'text');
+    setlocalStorageData('password', this.ionPassword.value as string, 'text');
 
-    await Preferences.set({
-      key: 'password',
-      value: this.ionPassword.value as string,
-    });
   };
 
   getCredentials = async () => {
-    const { value: username } = await Preferences.get({ key: 'username' });
-    const { value: password } = await Preferences.get({ key: 'password' });
+    const { value: username } = await getLocalStorageData('username');
+    const { value: password } = await getLocalStorageData('password');
 
     return { username, password };
   };
