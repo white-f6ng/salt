@@ -1,7 +1,9 @@
 import { AfterViewInit, Component, computed, effect, Input, OnChanges, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { ApiService } from 'src/app/services/apiservice.service';
-import { IonInput, IonButton, IonList, IonLabel, IonItem, IonRadio, 
-  IonRadioGroup, IonCheckbox } from "@ionic/angular/standalone";
+import {
+  IonInput, IonButton, IonList, IonLabel, IonItem, IonRadio,
+  IonRadioGroup, IonCheckbox
+} from "@ionic/angular/standalone";
 import { FormsModule } from '@angular/forms';
 import { getLocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
 import { Preferences } from '@capacitor/preferences';
@@ -16,7 +18,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
 
   //#region Variables
 
-  controls: { name: string; label: string, type: string, options?: any }[] = [];
+  controls: { name: string; label: string, type: string, options?: any, Question: string }[] = [];
   userDetails: any = {};
   allJobDetails: any = [];
   canDetailsShow: boolean = false;
@@ -32,7 +34,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
   //#endregion Variables
 
   constructor(private apiService: ApiService) {
-    
+
   }
 
   ngOnInit() {
@@ -48,7 +50,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
       this.isChanged = changes['isChanged'].currentValue;
     }
   }
-  
+
   chatResponse() {
     // this.apiService.questionnaireIn$.subscribe(async result => {
     //   if (result) {
@@ -147,8 +149,8 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
     // });
   }
 
-  setUserDetails(key: string, value: string, type: string) {
-    setlocalStorageData(key, value, type);
+  setUserDetails(key: string, value: string, type: string, question: string) {
+    setlocalStorageData(key, value, type, question);
   }
 
   getUserDetails(key: string) {
@@ -161,7 +163,8 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
       let value = input.value as any;
       if (value) {
         let matchedObj = this.controls.find(x => x.name === input.name);
-        this.setUserDetails(input.name, value, matchedObj?.type!);
+        if (matchedObj)
+          this.setUserDetails(input.name, value, matchedObj?.type, matchedObj?.Question);
         this.controls = this.controls.filter(x => x.name !== input.name);
       }
     }
@@ -169,7 +172,10 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
     for (const checkbox of checkBoxInputs) {
       if (checkbox.checked) {
         let value = checkbox.value;
-        this.setUserDetails(checkbox.name, value, "Check Box");
+        let matchedObj = this.controls.find(x => x.name === checkbox.name);
+        if (matchedObj) {
+          this.setUserDetails(checkbox.name, value, "Check Box", matchedObj?.Question);
+        }
         this.controls = this.controls.filter(x => x.name !== checkbox.name);
       }
     }
@@ -190,12 +196,13 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
         let canProceed = true;
 
         for (const [index, key] of questionnaire.entries()) {
+          let rawQuestionName = key.questionName;
           let keyValue = key.questionName.replace(/[\s/()?]+/g, "");
           let storedData = (await getLocalStorageData(keyValue));
           if (key.questionType === "acceptance") {
             storedData.value = JSON.stringify(["Yes"]);
           }
-          if (storedData.value != null ) {
+          if (storedData.value != null) {
 
             const isTextBox = key.questionType === "Text Box";
             applyData[jobId]["answers"][key.questionId] = isTextBox ? storedData.value : [storedData.value];
@@ -210,12 +217,12 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
             canProceed = false;
             if (["List Menu", "Radio Button", "Check Box"].some(x => x === key.questionType)) {
               options = Object.entries(key.answerOption).map(([key, value]) => ({
-                key,value
+                key, value
               }));
             }
 
             if (!this.controls.some(x => x.name == keyValue)) {
-              this.controls.push({ name: keyValue, label: key?.questionName, type: key.questionType, options: options });
+              this.controls.push({ name: keyValue, label: key?.questionName, type: key.questionType, options: options, Question: rawQuestionName });
             }
           }
         }

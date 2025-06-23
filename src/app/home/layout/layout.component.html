@@ -13,8 +13,8 @@
         </div>
 
         <ion-item>
-          <ion-input label="Profile Update" name="ionProfileUpdat" labelPlacement="floating" type="text" #ionProfileUpdate
-            placeholder="Profile Update" class="item"></ion-input>
+          <ion-input label="Profile Update" name="ionProfileUpdat" labelPlacement="floating" type="text"
+            #ionProfileUpdate placeholder="Profile Update" class="item"></ion-input>
         </ion-item>
 
         <ion-item>
@@ -39,7 +39,7 @@
     </ion-content>
   </ion-tab>
 
-  <ion-tab class="layout-main-pag"  tab="search">
+  <ion-tab class="layout-main-pag" tab="search">
     <ion-content>
       <div id="search-page">
         <div class="example-content">
@@ -76,6 +76,15 @@
 
         <div class="overlay-ref">
           <div class="content">
+
+            <!-- <ion-button id="hover-trigger">Hover Over Me</ion-button>
+
+            <ion-popover trigger="hover-trigger" triggerAction="hover">
+              <ng-template>
+                <ion-content class="ion-padding">Hello World!</ion-content>
+              </ng-template>
+            </ion-popover> -->
+
             <app-details #detialComponentRef [isChanged]="this.apiService.canProceed"></app-details>
 
             <ion-button (click)="submitSearch()" shape="round" size="small" expand="full">{{buttonMsg}}</ion-button>
@@ -91,10 +100,10 @@
             @if(apiService.count){
             <span class="center-text">Applied: {{apiService.count}}</span>
             }
-          @if(apiService.dailyCount && apiService.monthlyCount){
-          <span class="center-text">Daily Applied: {{apiService.dailyCount}}</span>
-          <span class="center-text">Monthly Applied: {{apiService.monthlyCount}}</span>
-          }
+            @if(apiService.dailyCount && apiService.monthlyCount){
+            <span class="center-text">Daily Applied: {{apiService.dailyCount}}</span>
+            <span class="center-text">Monthly Applied: {{apiService.monthlyCount}}</span>
+            }
 
             @if(apiService.appliedJobDetails && apiService.appliedJobDetails.length){
             <div class="applied-list">
@@ -128,12 +137,14 @@
                 <thead>
                   <tr>
                     <th style="padding: 8px;">Company Name</th>
+                    <th style="padding: 8px;">Job Title</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let item of apiService.chatResponseJobDetails">
                     @for ( job of item?.jobs; track job.id){
                     <td id="open-toast" (click)="openJobDetail(item)" style="padding: 8px;">{{job?.companyName}}
+                    <td id="open-toast" (click)="openJobDetail(item)" style="padding: 8px;">{{job?.jobTitle}}
                     </td>
                     }
                   </tr>
@@ -156,7 +167,7 @@
           </div>
         </div>
         <p class="edit-storage" (click)="openPreference()">
-          <ion-icon name="file-tray" class="header-icon" aria-label="Edit Preferences"></ion-icon>
+          <ion-icon name="create-outline" class="header-icon" aria-label="Edit Preferences"></ion-icon>
           Edit Storage
         </p>
 

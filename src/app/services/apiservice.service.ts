@@ -238,7 +238,7 @@ export class ApiService {
             };
 
             const responseJobApply = await CapacitorHttp.get(options);
-
+            console.log("Response Job Apply", responseJobApply?.data?.jobDetails);
             if (!responseJobApply?.data?.microsite && this.canProceed) {
               let resJobDetails = responseJobApply?.data?.jobDetails;
               const jobTitle = resJobDetails?.title?.toLowerCase();
@@ -284,16 +284,24 @@ export class ApiService {
                       },
                       data: obj,
                     }
-                    if (this.canProceed && !this.appliedJobDetails.length ||
-                      this.appliedJobDetails.every(x => x.jobs[0].jobId !== resJobDetails.jobId)) {
+                    if (this.canProceed) {
 
                       let applySucc = await CapacitorHttp.post(headers);
+
+                  console.log("apply sucess", applySucc?.data);
+
+
                       let quotaDetails = applySucc?.data?.quotaDetails
                       if (quotaDetails) {
                         this.dailyCount = quotaDetails?.dailyApplied;
                         this.monthlyCount = quotaDetails?.monthlyApplied;
                       }
-                      if (!applySucc?.data?.chatbotResponse&& this.canProceed) {
+                      const newJobId = applySucc?.data?.jobs?.[0]?.jobId;
+
+                      const isNewJob = !this.chatResponseJobDetails.some(
+                        x => x.jobs?.[0]?.jobId === newJobId
+                      );
+                      if (!applySucc?.data?.chatbotResponse && this.canProceed) {
 
                         if (applySucc?.data?.message?.statusCode == 403) {
 
@@ -303,8 +311,7 @@ export class ApiService {
                         this.appliedJobDetails = this.appliedJobDetails.concat(applySucc.data) as any;
 
                         this.count = this.count + 1;
-                      } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse &&
-                        this.chatResponseJobDetails.every(x => x.jobs[0].jobId !== applySucc?.data?.jobs[0]?.jobId) ) {
+                      } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse && isNewJob) {
                         applySucc.data["testObj"] = obj;
                         // this.applyChatResponse(applySucc?.data);
                         this.chatResponseJobDetails = this.chatResponseJobDetails.concat(applySucc?.data) as any;

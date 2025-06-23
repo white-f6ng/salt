@@ -1,29 +1,31 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Preferences Storage</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="layout-main-pag">
+  <!-- 🔍 Search Bar -->
+  <ion-searchbar [(ngModel)]="searchText" placeholder="Search questions..."></ion-searchbar>
 
-<ion-content>
+  @if(filteredKeys.length){
   <ion-list>
-    @for (key of keys; track key) {
-      @if(LSDataSource[key] && LSDataSource[key].type && (LSDataSource[key].type =="Text Box" || LSDataSource[key].type =="date" ||LSDataSource[key].type == "Radio Button")){
-    <ion-item>
-      <ion-label>
-        <strong>{{ key }}</strong>:
-        <ion-input #ioninput name="{{key}}" class="wrap-label" 
-          type="{{LSDataSource[key].type}}" [(ngModel)]="LSDataSource[key].value"></ion-input>
-        </ion-label>
-        <ion-icon slot="end" name="trash" class="trash" (click)="clearPreference(key)" ></ion-icon>
-      </ion-item>
+    @for (key of filteredKeys; let i = $index; track key) {
+      @if(
+        LSDataSource[key] && LSDataSource[key].question &&
+        LSDataSource[key].type &&
+        (LSDataSource[key].type === "Text Box" || LSDataSource[key].type === "date" || LSDataSource[key].type === "Radio Button")
+      ){
+        <ion-item>
+          <ion-label>
+            <strong>{{ i + 1 }}.</strong> {{ LSDataSource[key].question }}:
+            <ion-input #ioninput name="{{key}}" class="wrap-label"
+              type="{{LSDataSource[key].type}}" [(ngModel)]="LSDataSource[key].value">
+            </ion-input>
+          </ion-label>
+          <ion-icon slot="end" name="trash" class="trash" (click)="clearPreference(key)"></ion-icon>
+        </ion-item>
+      }
     }
-  }
   </ion-list>
-  
-  <ion-button fill="clear" (click)="onSubmit()" size="small">
 
-    Process
-</ion-button>
+  <ion-button fill="clear" (click)="onSubmit()" size="small">Process</ion-button>
+  }
+  
   <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="back-fab">
     <ion-icon (click)="goBack()" name="arrow-undo"></ion-icon>
   </ion-fab>

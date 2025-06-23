@@ -7,15 +7,15 @@ export async function getLocalStorageData(key: string) {
         return { value: undefined, type: undefined };
     }
 
-    const [value, type] = JSON.parse(rawValue)[0].split(';');
+    const [value, type, question] = JSON.parse(rawValue)[0].split(';');
 
-    return { value, type };
+    return { value, type, question };
 }
 
-export async function setlocalStorageData(key: string, value: string, type: string) {
+export async function setlocalStorageData(key: string, value: string, type: string, question: string|null) {
 
     if (value) {
-        value = `${value};${type}`;
+        value = `${value};${type};${question}`;
         value = JSON.stringify([value]);
 
     }

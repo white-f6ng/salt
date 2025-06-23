@@ -93,8 +93,8 @@ export class HomePage implements OnInit, AfterViewInit {
 
 
   setCredentials = async () => {
-    setlocalStorageData('username', this.ionUsername.value as string, 'text');
-    setlocalStorageData('password', this.ionPassword.value as string, 'text');
+    setlocalStorageData('username', this.ionUsername.value as string, 'text',null);
+    setlocalStorageData('password', this.ionPassword.value as string, 'text',null);
 
   };
 

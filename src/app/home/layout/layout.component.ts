@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, computed, effect, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonButton, IonContent, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSelect, IonSelectOption, IonTab, IonTabBar, IonTabButton, IonTabs, IonToast, IonTitle, IonToolbar, IonHeader } from "@ionic/angular/standalone";
+import { IonButton, IonContent, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSelect, IonSelectOption, IonTab, IonTabBar, IonTabButton, IonTabs, IonToast, IonTitle, IonToolbar, IonHeader, IonPopover } from "@ionic/angular/standalone";
 import { ApiService } from 'src/app/services/apiservice.service';
-import { Platform, ToastController,AlertController } from '@ionic/angular';
+import { Platform, ToastController, AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline, fileTray } from 'ionicons/icons';
+import { logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline, fileTray, createOutline } from 'ionicons/icons';
 import { CommonModule } from '@angular/common';
 import { Preferences } from '@capacitor/preferences';
 import { Clipboard } from '@capacitor/clipboard';
@@ -20,7 +20,7 @@ import { interval, Subscription } from 'rxjs';
   selector: 'app-layout',
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss'],
-  imports: [IonLabel, IonIcon, IonTab, IonTabBar, IonTabButton, CommonModule, IonTabs, IonInput, IonButton, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonSearchbar, IonList, DetailsComponent, FormsModule],
+  imports: [IonPopover, IonLabel, IonIcon, IonTab, IonTabBar, IonTabButton, CommonModule, IonTabs, IonInput, IonButton, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonSearchbar, IonList, DetailsComponent, FormsModule],
   providers: [BackgroundMode]
 })
 export class LayoutComponent implements OnInit, AfterViewInit {
@@ -56,7 +56,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     private toastController: ToastController,
     private alertController: AlertController,
     private backgroundMode: BackgroundMode) {
-    addIcons({ logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline, fileTray });
+    addIcons({ logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline, fileTray,createOutline });
     effect(() => {
       let count = this.startTimer();
       if (count) {
@@ -263,14 +263,14 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       const nameAttr = (await input.getInputElement()).name;
       const value = await input.getInputElement().then(el => el.value);
       if (nameAttr && value) {
-        await setlocalStorageData(nameAttr, value, "text");
+        await setlocalStorageData(nameAttr, value, "text", null);
       }
     }
     if (this?.searchBar?.value) {
-      await setlocalStorageData('SearchBar', this?.searchBar?.value, "text");
+      await setlocalStorageData('SearchBar', this?.searchBar?.value, "text", null);
     }
     if (this?.selectRef?.value) {
-      await setlocalStorageData('JobAge', this?.selectRef?.value, "text");
+      await setlocalStorageData('JobAge', this?.selectRef?.value, "text", null);
     }
   }
 
@@ -327,7 +327,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     let localValue = [this.ionProfileUpdate, this.ionMinutes]
     for (let i = 0; i < localValue.length; i++) {
       const input = localValue[i];
-      setlocalStorageData(input.name, input.value as string, "text");
+      setlocalStorageData(input.name, input.value as string, "text", null);
     }
   }
 
@@ -345,27 +345,27 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   //     let message = `${questionName} : ${validationErrors[i].message}`;
 
   //     this.presentToast(message, 'danger', 'alert-circle');
-      
+
   //   }
 
   // }
- async presentValidationAlert(validationErrors: any[]) {
-  const errorMessages = validationErrors.map(err => {
-    const questionName = this.jobDeatils?.jobs[0]?.questionnaire.find(
-      (x: any) => x.questionId === err?.field
-    )?.questionName || err?.field;
+  async presentValidationAlert(validationErrors: any[]) {
+    const errorMessages = validationErrors.map(err => {
+      const questionName = this.jobDeatils?.jobs[0]?.questionnaire.find(
+        (x: any) => x.questionId === err?.field
+      )?.questionName || err?.field;
 
-    return `${questionName}: ${err.message}\n`;
-  });
+      return `${questionName}: ${err.message}\n`;
+    });
 
-  const alert = await this.alertController.create({
-    header: 'Validation Errors',
-    message: `${errorMessages.join('\n')}`,
-    cssClass: 'error-alert',
-    buttons: ['OK']
-  });
+    const alert = await this.alertController.create({
+      header: 'Validation Errors',
+      message: `${errorMessages.join('\n')}`,
+      cssClass: 'error-alert',
+      buttons: ['OK']
+    });
 
-  await alert.present();
-}
+    await alert.present();
+  }
 
 }

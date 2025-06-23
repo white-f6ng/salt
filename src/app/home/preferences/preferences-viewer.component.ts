@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, DoCheck, OnChanges, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
@@ -13,10 +13,12 @@ import { getLocalStorageData, removeLocalStorageData, setlocalStorageData } from
   styleUrls: ['./preferences-viewer.component.scss'],
   imports: [IonButton, IonInput, IonIcon, IonHeader, IonItem, IonLabel, IonToolbar, IonTitle, IonContent, IonLabel, IonItem, IonList, IonIcon, IonFab, FormsModule],
 })
-export class PreferencesViewerComponent implements OnInit, AfterViewInit {
+export class PreferencesViewerComponent implements OnInit, AfterViewInit,OnChanges,DoCheck {
   keys: string[] = [];
-  LSDataSource: { [key: string]: { type: string, value: any } } = {};
+  LSDataSource: { [key: string]: { type: string, value: any, question: string } } = {};
   @ViewChildren('IonInput') IonInput!: QueryList<IonInput>;
+  searchText:string="";
+  filteredKeys: string[] = [];
   constructor(private router: Router) {
     addIcons({ trashBin, trash, trashSharp, pencil, create, arrowUndo })
   }
@@ -24,6 +26,13 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit {
   ngOnInit() {
 
   }
+ngOnChanges(changes: SimpleChanges): void {
+  this.updateFilteredKeys();
+}
+ngDoCheck(): void {
+  this.updateFilteredKeys();
+}
+
   ngAfterViewInit(): void {
     this.getPreferences();
   }
@@ -37,11 +46,12 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit {
       let locStorage = await getLocalStorageData(key);;
       let value = locStorage?.value;
       let type = locStorage?.type ?? "Text box";
+      let question = locStorage?.question ?? "Text box";
 
       try {
-        this.LSDataSource[key] = { type: type || "", value: value };
+        this.LSDataSource[key] = { type: type || "", value: value, question: question || "" };
       } catch {
-        this.LSDataSource[key] = { type: type || "", value };
+        this.LSDataSource[key] = { type: type || "", value, question: question || "" };
       }
     }
   }
@@ -57,7 +67,7 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit {
       if (value) {
         let matchedObj = this.LSDataSource[input.name];
         value = JSON.stringify([value]);
-        setlocalStorageData(input.name, value, matchedObj?.type);
+        setlocalStorageData(input.name, value, matchedObj?.type, matchedObj?.question);
       }
     }
   }
@@ -66,4 +76,10 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit {
 
     this.keys = this.keys.filter(key => key !== data);
   }
+  updateFilteredKeys() {
+  this.filteredKeys = this.keys.filter(key => {
+    const question = this.LSDataSource[key]?.question || '';
+    return question.toLowerCase().includes(this.searchText.toLowerCase());
+  });
+}
 }
