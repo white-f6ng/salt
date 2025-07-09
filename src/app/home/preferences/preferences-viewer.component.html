@@ -1,6 +1,12 @@
 <ion-content class="layout-main-pag">
   <!-- 🔍 Search Bar -->
-  <ion-searchbar [(ngModel)]="searchText" placeholder="Search questions..."></ion-searchbar>
+  <ion-searchbar
+  (ionInput)="updateFilteredKeys($event)"
+  name="preQuestion"
+  #preQuestionRef
+  placeholder="Search questions...">
+</ion-searchbar>
+
 
   @if(filteredKeys.length){
   <ion-list>

@@ -126,7 +126,7 @@ export class ApiService {
       location: location?.toLowerCase(),
       keyword: skills?.toLowerCase(),
       sort: "r",
-      pageNo: pageNumber,
+      pageNo: this.pageNumber,
       experience: experience,
       jobAge: jobAge,
       k: skills?.toLowerCase(),
@@ -177,177 +177,9 @@ export class ApiService {
 
   }
 
-  // async searchJobs(searchParams: any) {
-  //   let { skills, experience, location, jobAge, preferedTitle } = searchParams;
-    
-  //   let preTitle = preferedTitle;
-
-  //   searchParams['pageNumber'] = this.pageNumber;
-  //   this.count = 0;
-  //   this.allJobDetails = [];
-  //   this.appliedJobDetails = [];
-  //   this.chatResponseJobDetails = [];
-
-
-  //   while (this.canProceed) {
-  //     let url = this.buildJobSearchUrl(searchParams);
-
-  //     const options = {
-  //       url: url,
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         accept: "application/json",
-  //         appid: "109",
-  //         clientid: "d3skt0p",
-  //         systemid: "Naukri",
-  //         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-  //         Authorization: `Bearer ${this.token}`,
-  //         nkparam: "==",
-  //       }
-  //     };
-
-  //     try {
-  //       const response = await CapacitorHttp.get(options);
-  //       console.log("Response received for page", this.pageNumber);
-
-  //       if (response?.data?.jobDetails && response.data.jobDetails.length > 0) {
-
-  //         let jobDetails = response.data.jobDetails;
-  //         let sid = response?.data?.sid;
-
-  //         for (let i = 0; i < jobDetails?.length; i++) {
-  //           const job = jobDetails[i];
-  //           const jobApplyUrl = `https://www.naukri.com/jobapi/v4/job/${job.jobId
-  //             }?microsite=y&src=jobsearchDesk&sid=${sid}&xp=${i + 1
-  //             }&px=${this.pageNumber}&nignbevent_src=jobsearchDeskGNB`;
-
-  //           const options = {
-  //             url: jobApplyUrl,
-  //             headers: {
-  //               "Content-Type": "application/json",
-  //               accept: "application/json",
-  //               appid: "121",
-  //               clientid: "d3skt0p",
-  //               systemid: "Naukri",
-  //               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-  //               Authorization: `Bearer ${this.token}`,
-  //               NKparam: "==",
-  //               cookie: "nauk_at",
-  //             }
-  //           };
-
-  //           const responseJobApply = await CapacitorHttp.get(options);
-  //           console.log("Response Job Apply", responseJobApply?.data?.jobDetails);
-  //           if (!responseJobApply?.data?.microsite && this.canProceed) {
-  //             let resJobDetails = responseJobApply?.data?.jobDetails;
-  //             const jobTitle = resJobDetails?.title?.toLowerCase();
-  //             if (jobTitle && this.canProceed) {
-
-  //               const hasMatch = preTitle.some((x: string) => jobTitle.includes(x.toLowerCase()) || resJobDetails?.keySkills?.preferred.some((y: any) => y.label.toLowerCase().includes(x)));
-  //               if (resJobDetails && this.canProceed) {
-  //                 if (!resJobDetails?.applyRedirectUrl
-  //                   && (!preTitle?.length || hasMatch)) {
-  //                   let jobApply = `https://www.naukri.com/cloudgateway-workflow/workflow-services/apply-workflow/v1/apply`;
-
-  //                   let obj = {
-  //                     applySrc: "cluster",
-  //                     applyTypeId: "107",
-  //                     chatBotSDK: true,
-  //                     closebtn: "y",
-  //                     crossdomain: true,
-  //                     flowtype: "show",
-  //                     jquery: 1,
-  //                     logStr: resJobDetails?.logStr,
-  //                     mandatory_skills: resJobDetails?.keySkills?.preferred.map(
-  //                       (x: any) => x.label
-  //                     ),
-  //                     optional_skills: resJobDetails?.keySkills?.other.map(
-  //                       (x: any) => x.label
-  //                     ),
-  //                     rdxMsgId: "",
-  //                     sid: resJobDetails?.logStr.split("-")[8],
-  //                     strJobsarr: [resJobDetails.jobId],
-  //                   };
-  //                   let headers = {
-  //                     url: jobApply,
-  //                     headers: {
-  //                       "Content-Type": "application/json",
-  //                       accept: "application/json",
-  //                       appid: "121",
-  //                       clientid: "d3skt0p",
-  //                       systemid: "Naukri",
-  //                       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-  //                       Authorization: `Bearer ${this.token}`,
-  //                       NKparam: "==",
-  //                       cookie: "nauk_at",
-  //                     },
-  //                     data: obj,
-  //                   }
-  //                   if (this.canProceed) {
-
-  //                     let applySucc = await CapacitorHttp.post(headers);
-
-  //                 console.log("apply sucess", applySucc?.data);
-
-
-  //                     let quotaDetails = applySucc?.data?.quotaDetails
-  //                     if (quotaDetails) {
-  //                       this.dailyCount = quotaDetails?.dailyApplied;
-  //                       this.monthlyCount = quotaDetails?.monthlyApplied;
-  //                     }
-  //                     const newJobId = applySucc?.data?.jobs?.[0]?.jobId;
-
-  //                     const isNewJob = !this.chatResponseJobDetails.some(
-  //                       x => x.jobs?.[0]?.jobId === newJobId
-  //                     );
-  //                     if (!applySucc?.data?.chatbotResponse && this.canProceed) {
-
-  //                       if (applySucc?.data?.message?.statusCode == 403) {
-
-  //                         throw new Error("Daily quota of jobs exceeded");
-  //                       }
-
-  //                       this.appliedJobDetails = this.appliedJobDetails.concat(applySucc.data) as any;
-
-  //                       this.count = this.count + 1;
-  //                     } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse && isNewJob) {
-  //                       applySucc.data["testObj"] = obj;
-  //                       // this.applyChatResponse(applySucc?.data);
-  //                       this.chatResponseJobDetails = this.chatResponseJobDetails.concat(applySucc?.data) as any;
-  //                     } else {
-  //                       this.allJobDetails = this.allJobDetails.concat(applySucc?.data) as any;
-  //                     }
-  //                   }
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         }
-
-  //         this.pageNumber++;
-  //       } else {
-  //         console.log("No more job details available.");
-  //         break;
-  //       }
-  //     } catch (error: any) {
-  //       const fullError = {
-  //         message: error?.message,
-  //         responseMessage: error?.response?.data?.message,
-  //         status: error?.response?.status,
-  //         statusText: error?.response?.statusText,
-  //         raw: error
-  //       };
-
-  //       this.errorMsg.push(JSON.stringify(fullError, null, 2));
-  //       break;
-  //     }
-  //   }
-  // }
-
-async searchJobs(searchParams: any) {
+  async searchJobs(searchParams: any) {
     let { skills, experience, location, jobAge, preferedTitle } = searchParams;
-
-
+    this.pageNumber = 1;
     let preTitle = preferedTitle;
 
     searchParams['pageNumber'] = this.pageNumber;
@@ -378,7 +210,7 @@ async searchJobs(searchParams: any) {
         const response = await CapacitorHttp.get(options);
         console.log("Response received for page", this.pageNumber);
 
-        if (response?.data?.jobDetails && response.data.jobDetails.length > 0 && this.canProceed) {
+        if (response?.data?.jobDetails && response.data.jobDetails.length > 0) {
 
           let jobDetails = response.data.jobDetails;
           let sid = response?.data?.sid;
@@ -405,16 +237,16 @@ async searchJobs(searchParams: any) {
             };
 
             const responseJobApply = await CapacitorHttp.get(options);
-
+            console.log("Response Job Apply", responseJobApply?.data?.jobDetails);
             if (!responseJobApply?.data?.microsite && this.canProceed) {
               let resJobDetails = responseJobApply?.data?.jobDetails;
               const jobTitle = resJobDetails?.title?.toLowerCase();
-              if (jobTitle) {
+              if (jobTitle && this.canProceed) {
 
                 const hasMatch = preTitle.some((x: string) => jobTitle.includes(x.toLowerCase()) || resJobDetails?.keySkills?.preferred.some((y: any) => y.label.toLowerCase().includes(x)));
                 if (resJobDetails && this.canProceed) {
                   if (!resJobDetails?.applyRedirectUrl
-                    && hasMatch &&this.canProceed) {
+                    && (!preTitle?.length || hasMatch)) {
                     let jobApply = `https://www.naukri.com/cloudgateway-workflow/workflow-services/apply-workflow/v1/apply`;
 
                     let obj = {
@@ -451,28 +283,39 @@ async searchJobs(searchParams: any) {
                       },
                       data: obj,
                     }
-                    if (this.appliedJobDetails.length === 0 ||
-                      this.appliedJobDetails.every(x => x.jobs[0].jobId !== resJobDetails.jobId &&this.canProceed)) {
+                    if (this.canProceed) {
 
                       let applySucc = await CapacitorHttp.post(headers);
+
+                      console.log("apply sucess", applySucc?.data);
+
+
                       let quotaDetails = applySucc?.data?.quotaDetails
                       if (quotaDetails) {
                         this.dailyCount = quotaDetails?.dailyApplied;
                         this.monthlyCount = quotaDetails?.monthlyApplied;
                       }
-                      if (!applySucc?.data?.chatbotResponse) {
+                      const newJobId = applySucc?.data?.jobs?.[0]?.jobId;
 
-                        if (applySucc?.data?.message?.statusCode == 403) {
+                      const isNewJob = !this.chatResponseJobDetails.some(
+                        x => x.jobs?.[0]?.jobId === newJobId
+                      );
+                      if (!applySucc?.data?.chatbotResponse && this.canProceed) {
 
-                          throw new Error("Daily quota of jobs exceeded");
+                        if (applySucc?.data?.statusCode == 403) {
+
+                            let validationErrors = applySucc?.data?.validationErrors;
+                            this.validation.update(value => validationErrors);
+                            throw new Error("Daily quota of jobs exceeded");
                         }
 
                         this.appliedJobDetails = this.appliedJobDetails.concat(applySucc.data) as any;
 
                         this.count = this.count + 1;
-                      } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse) {
+                      } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse && isNewJob) {
                         applySucc.data["testObj"] = obj;
-                        // this.applyChatResponse(applySucc?.data);
+                        applySucc.data["canApply"] = true;
+                        this.applyChatResponse(applySucc?.data);
                         this.chatResponseJobDetails = this.chatResponseJobDetails.concat(applySucc?.data) as any;
                       } else {
                         this.allJobDetails = this.allJobDetails.concat(applySucc?.data) as any;
@@ -503,6 +346,7 @@ async searchJobs(searchParams: any) {
       }
     }
   }
+
   async exportToExcel() {
     // Convert JSON data to sheets
     const ws1 = XLSX.utils.json_to_sheet(this.appliedJobDetails);

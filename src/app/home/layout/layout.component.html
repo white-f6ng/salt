@@ -88,6 +88,11 @@
             <app-details #detialComponentRef [isChanged]="this.apiService.canProceed"></app-details>
 
             <ion-button (click)="submitSearch()" shape="round" size="small" expand="full">{{buttonMsg}}</ion-button>
+
+            <p class="edit-storage" (click)="openPreference()">
+              <ion-icon name="create-outline" class="header-icon" aria-label="Edit Preferences"></ion-icon>
+              Edit Storage
+            </p>
             <!-- <ion-button (click)="clearChatRes()" shape="round" size="small" expand="full">clear Chat
               response</ion-button> -->
 
@@ -113,6 +118,7 @@
                   <thead>
                     <tr>
                       <th style="padding: 8px;">Company Name</th>
+                      <th style="padding: 8px;">Job Title</th>
                       <th style="padding: 8px;">Status</th>
                     </tr>
                   </thead>
@@ -120,6 +126,7 @@
                     <tr *ngFor="let item of apiService.appliedJobDetails">
                       @for ( job of item?.jobs; track job.id){
                       <td style="padding: 8px;">{{ job?.companyName }}</td>
+                      <td style="padding: 8px;">{{ job?.jobTitle }}</td>
                       <td style="padding: 8px;"><ion-icon name="checkmark-circle-outline" role="img"
                           class="md"></ion-icon></td>
                       }
@@ -166,10 +173,7 @@
             }
           </div>
         </div>
-        <p class="edit-storage" (click)="openPreference()">
-          <ion-icon name="create-outline" class="header-icon" aria-label="Edit Preferences"></ion-icon>
-          Edit Storage
-        </p>
+
 
 
       </div>

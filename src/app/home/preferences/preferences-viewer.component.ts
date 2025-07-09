@@ -1,8 +1,9 @@
-import { AfterViewInit, Component, DoCheck, OnChanges, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, DoCheck, OnChanges, OnInit, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
-import { IonItem, IonLabel, IonHeader, IonContent, IonTitle, IonToolbar, IonList, IonIcon, IonFab, IonFabButton, IonInput, IonButton } from "@ionic/angular/standalone";
+import { IonItem, IonLabel, IonHeader, IonContent, IonTitle, IonToolbar, IonList, IonIcon, IonFab, IonFabButton, IonInput, IonButton, IonSearchbar } from "@ionic/angular/standalone";
 import { addIcons } from 'ionicons';
 import { create, pencil, trash, trashBin, trashSharp, arrowUndo } from 'ionicons/icons';
 import { getLocalStorageData, removeLocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
@@ -11,14 +12,18 @@ import { getLocalStorageData, removeLocalStorageData, setlocalStorageData } from
   selector: 'app-preferences-viewer',
   templateUrl: './preferences-viewer.component.html',
   styleUrls: ['./preferences-viewer.component.scss'],
-  imports: [IonButton, IonInput, IonIcon, IonHeader, IonItem, IonLabel, IonToolbar, IonTitle, IonContent, IonLabel, IonItem, IonList, IonIcon, IonFab, FormsModule],
+  imports: [IonSearchbar, IonButton, IonInput, IonIcon, IonHeader, IonItem, IonLabel, IonToolbar, IonTitle, IonContent, IonLabel, IonItem, IonList, IonIcon, IonFab, FormsModule, CommonModule],
 })
-export class PreferencesViewerComponent implements OnInit, AfterViewInit,OnChanges,DoCheck {
+export class PreferencesViewerComponent implements OnInit, AfterViewInit, OnChanges, DoCheck {
   keys: string[] = [];
   LSDataSource: { [key: string]: { type: string, value: any, question: string } } = {};
   @ViewChildren('IonInput') IonInput!: QueryList<IonInput>;
-  searchText:string="";
+  searchText: string = "";
   filteredKeys: string[] = [];
+  @ViewChild('preQuestionRef', { static: true }) preQuestionRef!: IonSearchbar;
+
+
+
   constructor(private router: Router) {
     addIcons({ trashBin, trash, trashSharp, pencil, create, arrowUndo })
   }
@@ -26,12 +31,12 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit,OnChang
   ngOnInit() {
 
   }
-ngOnChanges(changes: SimpleChanges): void {
-  this.updateFilteredKeys();
-}
-ngDoCheck(): void {
-  this.updateFilteredKeys();
-}
+  ngOnChanges(changes: SimpleChanges): void {
+    this.updateFilteredKeys();
+  }
+  ngDoCheck(): void {
+    this.updateFilteredKeys();
+  }
 
   ngAfterViewInit(): void {
     this.getPreferences();
@@ -76,10 +81,12 @@ ngDoCheck(): void {
 
     this.keys = this.keys.filter(key => key !== data);
   }
-  updateFilteredKeys() {
-  this.filteredKeys = this.keys.filter(key => {
-    const question = this.LSDataSource[key]?.question || '';
-    return question.toLowerCase().includes(this.searchText.toLowerCase());
-  });
-}
+  updateFilteredKeys(event?: Event) {
+
+    const query = this.preQuestionRef.value?.toLowerCase() || '';
+    this.filteredKeys = this.keys.filter(key => {
+      const question = this.LSDataSource[key]?.question || '';
+      return question.toLowerCase().includes(query.toLowerCase());
+    });
+  }
 }

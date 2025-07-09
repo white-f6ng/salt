@@ -212,7 +212,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
               this.apiService.successResponse(this.resultDetails);
             }
 
-          } else {
+          } else if(!result?.canApply) {
             let options;
             canProceed = false;
             if (["List Menu", "Radio Button", "Check Box"].some(x => x === key.questionType)) {
