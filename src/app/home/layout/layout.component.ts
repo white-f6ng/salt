@@ -1,18 +1,18 @@
-import { AfterViewInit, Component, computed, effect, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { Router } from '@angular/router';
-import { IonButton, IonContent, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSelect, IonSelectOption, IonTab, IonTabBar, IonTabButton, IonTabs, IonToast, IonTitle, IonToolbar, IonHeader, IonPopover } from "@ionic/angular/standalone";
-import { ApiService } from 'src/app/services/apiservice.service';
-import { Platform, ToastController, AlertController } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline, fileTray, createOutline } from 'ionicons/icons';
 import { CommonModule } from '@angular/common';
-import { Preferences } from '@capacitor/preferences';
-import { Clipboard } from '@capacitor/clipboard';
-import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
-import { DetailsComponent } from '../details/details.component';
-import { getLocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
+import { AfterViewInit, Component, computed, effect, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
+import { Clipboard } from '@capacitor/clipboard';
+import { Preferences } from '@capacitor/preferences';
+import { AlertController, Platform, ToastController } from '@ionic/angular';
+import { IonBadge, IonButton, IonCard, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCheckbox, IonChip, IonContent, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSelect, IonSelectOption, IonTab, IonTabBar, IonTabButton, IonTabs } from "@ionic/angular/standalone";
+import { addIcons } from 'ionicons';
+import { checkmarkCircleOutline, clipboardOutline, close, createOutline, downloadOutline, fileTray, funnelOutline, logOutOutline, pauseOutline, playCircle, playOutline, search, searchOutline, time } from 'ionicons/icons';
 import { interval, Subscription } from 'rxjs';
+import { getLocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
+import { ApiService } from 'src/app/services/apiservice.service';
+import { DetailsComponent } from '../details/details.component';
 
 
 
@@ -20,7 +20,7 @@ import { interval, Subscription } from 'rxjs';
   selector: 'app-layout',
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss'],
-  imports: [IonPopover, IonLabel, IonIcon, IonTab, IonTabBar, IonTabButton, CommonModule, IonTabs, IonInput, IonButton, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonSearchbar, IonList, DetailsComponent, FormsModule],
+  imports: [IonCheckbox, IonChip, IonBadge, IonCard, IonCardTitle, IonCardSubtitle,  IonCardHeader,  IonLabel, IonIcon, IonTab, IonTabBar, IonTabButton, CommonModule, IonTabs, IonInput, IonButton, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonSearchbar, IonList, DetailsComponent, FormsModule ],
   providers: [BackgroundMode]
 })
 export class LayoutComponent implements OnInit, AfterViewInit {
@@ -36,12 +36,16 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   showMessage: boolean = false;
   messageContent: string = "";
-  buttonMsg: string = "Submit";
+  buttonMsg: string = "Search";
   selectedValue: String = "";
+  isStopped: boolean = false;
   userDetails: any = {
     Experience: "",
     prefLocation: "",
     PreferedTitle: "",
+    skills: "",
+    freshness: "",
+    canFilter: false
   }
 
   public results: any = [];
@@ -50,29 +54,36 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   time = 0;
   btnMsg = "Process";
   jobDeatils: any;
+  canDisplayFilters: boolean = false;
+  showFullSearch: boolean = false;
+  canShowChatResponse: boolean = false;
 
 
   constructor(public apiService: ApiService, private router: Router, private platform: Platform,
     private toastController: ToastController,
-    private alertController: AlertController,
     private backgroundMode: BackgroundMode) {
-    addIcons({ logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline, fileTray,createOutline });
+    addIcons({ logOutOutline, playCircle, search, downloadOutline, clipboardOutline, checkmarkCircleOutline, fileTray, createOutline, funnelOutline, close, searchOutline, time, pauseOutline, playOutline });
     effect(() => {
       let count = this.startTimer();
       if (count) {
         this.start();
       }
+    });
+    effect(() => {
+      let isValid = this.isValid(); {
+        if (isValid) {
+          this.revertSearchOption();
+        }
+      }
+    });
+    effect(() => {
       let session = this.sessionExpired();
       if (session) {
         this.messageContent = "";
         this.router.navigate(['']);
+
       }
-      let isValid = this.isValid(); {
-        if (isValid) {
-          this.presentValidationAlert(isValid);
-        }
-      }
-    });
+    })
   }
 
   ngOnInit() {
@@ -163,6 +174,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   }
 
   submitSearch() {
+    this.showFullSearch = false;
     let preferedTitle: string[] = [];
     this.getAllPreferences();
     if (typeof this.userDetails.PreferedTitle === 'string') {
@@ -173,14 +185,15 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
     if (this.buttonMsg === "Cancel") {
       this.apiService.canProceed = false;
-      this.buttonMsg = "Submit";
+      this.buttonMsg = "Search";
     } else if (this.apiService.token) {
       this.searchData = {
-        skills: this.selectedValue,
+        skills: this.userDetails.skills,
         experience: this.userDetails.experience,
         location: this.userDetails.prefLocation,
-        jobAge: this.selectRef.value,
+        jobAge: this.userDetails.freshness,
         preferedTitle: preferedTitle,
+        onlySelected: this.userDetails.canFilter,
       }
 
       this.buttonMsg = "Cancel";
@@ -190,6 +203,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       this.setlocalStorage();
     } else {
       this.showMessage = true;
+      this.isStopped = false;
       this.messageContent = "Your token has been expired, Please login to use this feature."
       setTimeout(() => {
         this.messageContent = "";
@@ -206,7 +220,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   selectResult(data: string) {
     const encodedValue = encodeURIComponent(data.toLocaleLowerCase());
     this.selectedValue = encodedValue;
-    this.searchBar.value = data;
+    this.userDetails.skills = data;
   }
 
   exportToExcel() {
@@ -266,11 +280,11 @@ export class LayoutComponent implements OnInit, AfterViewInit {
         await setlocalStorageData(nameAttr, value, "text", null);
       }
     }
-    if (this?.searchBar?.value) {
-      await setlocalStorageData('SearchBar', this?.searchBar?.value, "text", null);
+    if (this?.userDetails?.skills) {
+      await setlocalStorageData('skills', this?.userDetails?.skills, "text", null);
     }
-    if (this?.selectRef?.value) {
-      await setlocalStorageData('JobAge', this?.selectRef?.value, "text", null);
+    if (this?.userDetails?.freshness) {
+      await setlocalStorageData('freshness', this?.userDetails?.freshness, "text", null);
     }
   }
 
@@ -281,22 +295,25 @@ export class LayoutComponent implements OnInit, AfterViewInit {
         this.userDetails[key] = result.value;
       }
     }
-    let searchBar = (await getLocalStorageData('SearchBar'));
+    let searchBar = (await getLocalStorageData('skills'));
     if (searchBar.value) {
-      this.searchBar.value = searchBar.value;
+      this.userDetails.skills = searchBar.value;
       this.selectResult(searchBar.value!);
     }
-    let jobAge = (await getLocalStorageData('JobAge'));
+    let jobAge = (await getLocalStorageData('freshness'));
     if (jobAge.value !== null) {
-      this.selectRef.value = jobAge.value;
+      this.userDetails.freshness = jobAge.value;
     }
   }
 
   async openJobDetail(job: any) {
     if (job) {
+      this.canShowChatResponse = true;
       this.jobDeatils = job;
-      this.detialComponentRef.canProcess = true;
-      await this.apiService.applyChatResponse(job);
+      job["canApply"] = true;
+      setTimeout(async () => {
+        await this.apiService.applyChatResponse(job);
+      });
     }
   }
 
@@ -336,36 +353,52 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     this.ionProfileUpdate.value = (await getLocalStorageData('ionProfileUpdate'))?.value;
   }
 
-  // handleValidationMessages(validationErrors: any) {
+  // async presentValidationAlert(validationErrors: any[]) {
+  //   const errorMessages = validationErrors.map(err => {
+  //     const questionName = this.jobDeatils?.jobs[0]?.questionnaire.find(
+  //       (x: any) => x.questionId === err?.field
+  //     )?.questionName || err?.field;
 
-  //   for (let i = 0; i < validationErrors.length; i++) {
+  //     return `${questionName}: ${err.message}\n`;
+  //   });
+  //   this.buttonMsg = "Search";
+  //   this.isStopped = false;
+  //   const alert = await this.alertController.create({
+  //     header: 'Errors',
+  //     message: `${errorMessages.join('\n')}`,
+  //     cssClass: 'error-alert',
+  //     buttons: ['OK']
+  //   });
 
-  //     let questionName = this.jobDeatils?.jobs[0]?.questionnaire.find((x: any) => x.questionId ===validationErrors[i]?.field )?.questionName
-
-  //     let message = `${questionName} : ${validationErrors[i].message}`;
-
-  //     this.presentToast(message, 'danger', 'alert-circle');
-
-  //   }
-
+  //   await alert.present();
   // }
-  async presentValidationAlert(validationErrors: any[]) {
-    const errorMessages = validationErrors.map(err => {
-      const questionName = this.jobDeatils?.jobs[0]?.questionnaire.find(
-        (x: any) => x.questionId === err?.field
-      )?.questionName || err?.field;
 
-      return `${questionName}: ${err.message}\n`;
-    });
-
-    const alert = await this.alertController.create({
-      header: 'Validation Errors',
-      message: `${errorMessages.join('\n')}`,
-      cssClass: 'error-alert',
-      buttons: ['OK']
-    });
-
-    await alert.present();
+  jobIdIndex(itemId: string | number, jobId: string | number): string {
+    return `${itemId}-${jobId}`;
   }
 
+  pauseTriggered(event: Event) {
+    event.stopPropagation();
+    this.isStopped = false;
+    if (this.buttonMsg === "Cancel") {
+      this.submitSearch();
+    }
+  }
+  playTriggered(event: Event) {
+    event.stopPropagation();
+    this.isStopped = true;
+    if (this.buttonMsg === "Search") {
+      this.submitSearch();
+    }
+  }
+
+  revertSearchOption() {
+    this.buttonMsg = "Search";
+    this.isStopped = false;
+
+  }
+
+  onSuccessEvent() {
+    this.canShowChatResponse = false;
+  }
 }

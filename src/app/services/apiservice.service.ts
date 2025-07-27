@@ -4,6 +4,9 @@ import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { BehaviorSubject, catchError, from, Observable, throwError } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { presentValidationAlert } from '../core/helpers/utility';
+import { AlertController } from '@ionic/angular';
+
 
 @Injectable({
   providedIn: 'root'
@@ -39,7 +42,10 @@ export class ApiService {
 
 
   pageNumber: number = 1;
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private alertController: AlertController) {
+    this.chatQuest.set(0);
+    this.tokenExpired.set(false);
+    this.validation.set(null);
 
   }
   async beginProcess(profile: any, value: string, timeInterval: number) {
@@ -57,7 +63,6 @@ export class ApiService {
           profile.profile.summary = profile.profile.summary.split(value)[0];
           isfirst = 0;
           this.apiresponseData.content = "-";
-
         }
 
         const options = {
@@ -178,7 +183,7 @@ export class ApiService {
   }
 
   async searchJobs(searchParams: any) {
-    let { skills, experience, location, jobAge, preferedTitle } = searchParams;
+    let { skills, experience, location, jobAge, preferedTitle, onlySelected } = searchParams;
     this.pageNumber = 1;
     let preTitle = preferedTitle;
 
@@ -243,7 +248,7 @@ export class ApiService {
               const jobTitle = resJobDetails?.title?.toLowerCase();
               if (jobTitle && this.canProceed) {
 
-                const hasMatch = preTitle.some((x: string) => jobTitle.includes(x.toLowerCase()) || resJobDetails?.keySkills?.preferred.some((y: any) => y.label.toLowerCase().includes(x)));
+                const hasMatch = preTitle.some((x: string) => jobTitle.includes(x.toLowerCase()) || !onlySelected && resJobDetails?.keySkills?.preferred.some((y: any) => y.label.toLowerCase().includes(x)));
                 if (resJobDetails && this.canProceed) {
                   if (!resJobDetails?.applyRedirectUrl
                     && (!preTitle?.length || hasMatch)) {
@@ -304,18 +309,21 @@ export class ApiService {
 
                         if (applySucc?.data?.statusCode == 403) {
 
-                            let validationErrors = applySucc?.data?.validationErrors;
-                            this.validation.update(value => validationErrors);
-                            throw new Error("Daily quota of jobs exceeded");
+                          let validationErrors = applySucc?.data?.validationErrors;
+                          presentValidationAlert(validationErrors, response, this.alertController);
+                          this.validation.update(value => true);
+                          this.canProceed = false;
+                          break;
                         }
-
+                        applySucc.data['status'] = "success";
                         this.appliedJobDetails = this.appliedJobDetails.concat(applySucc.data) as any;
 
                         this.count = this.count + 1;
                       } else if (applySucc?.data?.applyRedirectUrl && applySucc?.data?.chatbotResponse && isNewJob) {
                         applySucc.data["testObj"] = obj;
-                        applySucc.data["canApply"] = true;
-                        this.applyChatResponse(applySucc?.data);
+                        applySucc.data['status'] = "pending";
+
+                        // await this.applyChatResponse(applySucc?.data);
                         this.chatResponseJobDetails = this.chatResponseJobDetails.concat(applySucc?.data) as any;
                       } else {
                         this.allJobDetails = this.allJobDetails.concat(applySucc?.data) as any;
@@ -330,7 +338,13 @@ export class ApiService {
           this.pageNumber++;
         } else {
           console.log("No more job details available.");
-          break;
+          if (response.status === 400) {
+            let validationErrors = response.data?.validationErrors;
+            presentValidationAlert(validationErrors, response, this.alertController);
+            this.validation.update(value => true);
+            break;
+          }
+          this.pageNumber++;
         }
       } catch (error: any) {
         const fullError = {
@@ -478,7 +492,8 @@ export class ApiService {
     let status = applySucc?.data;
     if (applySucc.data.applyStatus[jobId] === 406) {
       let validationErrors = status?.jobs[0]?.validationError;
-      this.validation.update(value => validationErrors);
+      this.validation.update(value => true);
+      presentValidationAlert(validationErrors, cr, this.alertController);
 
     }
 
@@ -486,6 +501,7 @@ export class ApiService {
     this.monthlyCount = applySucc?.data?.quotaDetails?.monthlyApplied;
     if (applySucc?.data?.quotaDetails?.dailyApplied) {
       this.chatResponseJobDetails = this.chatResponseJobDetails.filter(x => x.jobs[0].jobId !== cr.jobs[0].jobId);
+      cr["status"] = "success";
       this.appliedJobDetails = this.appliedJobDetails.concat(cr);
     }
 

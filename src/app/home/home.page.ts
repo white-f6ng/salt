@@ -17,7 +17,6 @@ import { getLocalStorageData, setlocalStorageData } from '../core/helpers/utilit
 })
 export class HomePage implements OnInit, AfterViewInit {
   response: any;
-  inputDetails: { username: string | number, password: string | number } = { username: '', password: '' };
   @ViewChild('ionUsername') ionUsername!: IonInput;
   @ViewChild('ionPassword') ionPassword!: IonInput;
   showMessage: boolean = false;

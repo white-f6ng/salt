@@ -3,16 +3,16 @@ import { AfterViewInit, Component, DoCheck, OnChanges, OnInit, QueryList, Simple
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
-import { IonItem, IonLabel, IonHeader, IonContent, IonTitle, IonToolbar, IonList, IonIcon, IonFab, IonFabButton, IonInput, IonButton, IonSearchbar } from "@ionic/angular/standalone";
+import { IonButton, IonContent, IonFab, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar } from "@ionic/angular/standalone";
 import { addIcons } from 'ionicons';
-import { create, pencil, trash, trashBin, trashSharp, arrowUndo } from 'ionicons/icons';
+import { arrowUndo, create, pencil, trash, trashBin, trashSharp } from 'ionicons/icons';
 import { getLocalStorageData, removeLocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
 
 @Component({
   selector: 'app-preferences-viewer',
   templateUrl: './preferences-viewer.component.html',
   styleUrls: ['./preferences-viewer.component.scss'],
-  imports: [IonSearchbar, IonButton, IonInput, IonIcon, IonHeader, IonItem, IonLabel, IonToolbar, IonTitle, IonContent, IonLabel, IonItem, IonList, IonIcon, IonFab, FormsModule, CommonModule],
+  imports: [IonSearchbar, IonButton, IonInput, IonIcon,  IonItem, IonLabel,   IonContent, IonLabel, IonItem, IonList, IonIcon, IonFab, FormsModule, CommonModule],
 })
 export class PreferencesViewerComponent implements OnInit, AfterViewInit, OnChanges, DoCheck {
   keys: string[] = [];
@@ -20,6 +20,7 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit, OnChan
   @ViewChildren('IonInput') IonInput!: QueryList<IonInput>;
   searchText: string = "";
   filteredKeys: string[] = [];
+  serialNumber: number = 0;
   @ViewChild('preQuestionRef', { static: true }) preQuestionRef!: IonSearchbar;
 
 
@@ -81,6 +82,11 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit, OnChan
 
     this.keys = this.keys.filter(key => key !== data);
   }
+  removeAllPreferences() {
+    this.keys.forEach(key => removeLocalStorageData(key));
+    this.keys = [];
+  }
+
   updateFilteredKeys(event?: Event) {
 
     const query = this.preQuestionRef.value?.toLowerCase() || '';
@@ -89,4 +95,10 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit, OnChan
       return question.toLowerCase().includes(query.toLowerCase());
     });
   }
+
+  
+incrementAndGet(): number {
+  return ++this.serialNumber;
+}
+
 }

@@ -1,8 +1,8 @@
 <ion-tabs>
   <div class="top-bar">
-    <ion-button fill="clear" size="small" (click)="logout()">
+    <!-- <ion-button fill="clear" size="small" (click)="logout()">
       <ion-icon name="log-out-outline"></ion-icon>
-      Logout</ion-button>
+      Logout</ion-button> -->
   </div>
   <!-- Home Tab -->
   <ion-tab tab="home" class="layout-main-pag">
@@ -24,14 +24,20 @@
 
         <ion-button size="small" (click)="beginTheProcess()" shape="round" expand="full">{{btnMsg}}</ion-button>
         @if(time){
-        <h2>{{ time | date:'HH:mm:ss':'UTC' }}</h2>
+        <ion-chip color="primary">
+          <ion-label>Time:</ion-label>
+          <ion-badge color="light">{{ time | date:'HH:mm:ss':'UTC' }}</ion-badge>
+        </ion-chip>
 
         <p>
           {{ apiService.apiresponseData.content }}
         </p>
-        <p>
-          <strong>Previous Status:</strong> {{ apiService.apiresponseData.status }}
-        </p>
+        
+
+        <ion-chip color="primary">
+          <ion-label>Previous Status:</ion-label>
+          <ion-badge color="light">{{ apiService.apiresponseData.status}}</ion-badge>
+        </ion-chip>
 
         }
 
@@ -40,31 +46,73 @@
   </ion-tab>
 
   <ion-tab class="layout-main-pag" tab="search">
-    <ion-content>
-      <div id="search-page">
-        <div class="example-content">
-          <ion-searchbar (ionInput)="handleInput($event)" #searchBar
-            placeholder="Enter skills / designations / companies"></ion-searchbar>
-          @if(results.length && !selectedValue){
-          <div class="results-wrapper">
-            <ion-list>
-              @for (result of results; track result) {
-              <ion-item (click)="selectResult(result.name[0])">
-                <ion-label>{{ result.name[0] }}</ion-label>
-              </ion-item>
-              }
-            </ion-list>
-          </div>
-          }
+    <ion-content *ngIf="!canShowChatResponse">
+      <!-- 🔹 COMPACT BAR (initial view) -->
+      <div class="search-bar-wrapper" *ngIf="!showFullSearch">
+        <div class="collapsed-bar">
+          <ion-item lines="none" class="compact-item" (click)="showFullSearch = !showFullSearch">
+            <ion-icon name="search-outline" slot="start"></ion-icon>
+            <ion-label color="medium">Search jobs, skills, companies...</ion-label>
+          </ion-item>
+        </div>
+
+        <div class="icon-wrapper">
+
+          <!-- Divider -->
+          <div class="divider"></div>
+
+          <!-- Toggle icon -->
+          <ion-icon name="pause-outline" class="right-icon" *ngIf="isStopped" (click)="pauseTriggered($event)">
+          </ion-icon>
+
+          <ion-icon name="play-outline" class="right-icon" *ngIf="!isStopped" (click)="playTriggered($event)">
+          </ion-icon>
+        </div>
+      </div>
+
+      <!-- 🔹 EXPANDED SEARCH PANEL -->
+      <div *ngIf="showFullSearch" class="expanded-search-wrapper">
+        <!-- Searchbar -->
+        <ion-searchbar (ionInput)="handleInput($event)" [(ngModel)]="userDetails.skills"
+          placeholder="Enter skills / designations / companies" showCancelButton="focus">
+        </ion-searchbar>
+        @if(results.length && !selectedValue){
+        <div class="results-wrapper">
+          <ion-list>
+            @for (result of results; track result) {
+            <ion-item (click)="selectResult(result.name[0])">
+              <ion-label>{{ result.name[0] }}</ion-label>
+            </ion-item>
+            }
+          </ion-list>
+        </div>
+        }
+
+        <!-- Filters -->
+        <div class="filters">
           <ion-input name="Experience" label="Experience" type="text" [(ngModel)]="userDetails.Experience"
-            placeholder="Enter your experience"></ion-input>
-          <ion-input name="PreferedLocation" label="Prefered Location" type="text"
-            [(ngModel)]="userDetails.prefLocation" placeholder="Enter your Prefered Location"></ion-input>
-          <ion-input name="PreferedTitle" label="Prefered Title" type="text" [(ngModel)]="userDetails.PreferedTitle"
-            placeholder="Enter your Prefered Title with coma(,)"></ion-input>
-          <ion-item>
+            placeholder="e.g. 3+ years">
+          </ion-input>
+
+          <ion-input name="PreferredLocation" label="Preferred Location" type="text"
+            [(ngModel)]="userDetails.prefLocation" placeholder="e.g. Remote, Mumbai">
+          </ion-input>
+          <div class="d-flex">
+            <ion-input name="PreferredTitle" label="Preferred Title" type="text" [(ngModel)]="userDetails.PreferedTitle"
+              placeholder="e.g. Developer, Analyst" class="flex-1"></ion-input>
+
+            <div class="checkbox-with-label">
+              <ion-checkbox [(ngModel)]="userDetails.canFilter"></ion-checkbox>
+              <span class="checkbox-help">Only Match</span>
+            </div>
+          </div>
+
+
+
+          <ion-item class="dropdown">
             <ion-label>Freshness</ion-label>
-            <ion-select interface="popover" #selectRef placeholder="Select time range">
+            <ion-select interface="popover" [(ngModel)]="userDetails.freshness" #selectRef
+              placeholder="Select time range">
               <ion-select-option value="1">Last 1 day</ion-select-option>
               <ion-select-option value="3">Last 3 days</ion-select-option>
               <ion-select-option value="7">Last 7 days</ion-select-option>
@@ -74,110 +122,133 @@
           </ion-item>
         </div>
 
-        <div class="overlay-ref">
-          <div class="content">
+        <!-- Search Buttons -->
+        <div class="search-actions">
+          <ion-button (click)="submitSearch()" shape="round" size="small" expand="block">
+            {{buttonMsg}}
+          </ion-button>
+          <ion-button fill="clear" size="small" (click)="showFullSearch = !showFullSearch">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+        <p class="edit-storage" (click)="openPreference()">
+          <ion-icon name="create-outline" class="header-icon" aria-label="Edit Preferences"></ion-icon>
+          Edit Storage
+        </p>
+      </div>
 
-            <!-- <ion-button id="hover-trigger">Hover Over Me</ion-button>
+      <!-- <ion-button id="hover-trigger">Hover Over Me</ion-button>
 
-            <ion-popover trigger="hover-trigger" triggerAction="hover">
+                  <ion-popover trigger="hover-trigger" triggerAction="hover">
               <ng-template>
                 <ion-content class="ion-padding">Hello World!</ion-content>
               </ng-template>
-            </ion-popover> -->
+      </ion-popover> -->
 
-            <app-details #detialComponentRef [isChanged]="this.apiService.canProceed"></app-details>
 
-            <ion-button (click)="submitSearch()" shape="round" size="small" expand="full">{{buttonMsg}}</ion-button>
 
-            <p class="edit-storage" (click)="openPreference()">
-              <ion-icon name="create-outline" class="header-icon" aria-label="Edit Preferences"></ion-icon>
-              Edit Storage
-            </p>
-            <!-- <ion-button (click)="clearChatRes()" shape="round" size="small" expand="full">clear Chat
+
+
+      <!-- <ion-button (click)="clearChatRes()" shape="round" size="small" expand="full">clear Chat
               response</ion-button> -->
 
-            @if(showMessage){
-            <div class="message-display">
-              <p>{{messageContent}}</p>
+      @if(showMessage){
+      <div class="message-display">
+        <p>{{messageContent}}</p>
+      </div>
+      }
+
+      @if(apiService.dailyCount && apiService.monthlyCount && !showFullSearch){
+      <ion-chip color="primary">
+        <ion-label>Daily Applied:</ion-label>
+        <ion-badge color="light">{{ apiService.dailyCount}}</ion-badge>
+      </ion-chip>
+      <ion-chip color="primary">
+        <ion-label>Monthly Applied:</ion-label>
+        <ion-badge color="light">{{ apiService.monthlyCount}}</ion-badge>
+      </ion-chip>
+      <ion-chip color="primary">
+        <ion-label>Pending List:</ion-label>
+        <ion-badge color="light">{{ apiService.chatResponseJobDetails.length }}</ion-badge>
+      </ion-chip>
+
+
+      <!-- <span class="center-text">Daily Applied: {{apiService.dailyCount}}</span> -->
+      <!-- <span class="center-text">Monthly Applied: {{apiService.monthlyCount}}</span> -->
+      }
+
+      @if(apiService.appliedJobDetails && apiService.appliedJobDetails.length && !showFullSearch){
+      <div class="card-section">
+        @for ( item of apiService.appliedJobDetails; track jobIdIndex($index, item.id)){
+        @for (job of item?.jobs; track jobIdIndex($index, job.id)) {
+        <ion-card class="card-container">
+          <div class="card-content-with-status">
+            <div class="card-main">
+              <ion-card-header>
+                <ion-card-title>{{ job?.companyName }}</ion-card-title>
+                <ion-card-subtitle>{{ job?.jobTitle }}</ion-card-subtitle>
+              </ion-card-header>
             </div>
-            }
-
-            @if(apiService.count){
-            <span class="center-text">Applied: {{apiService.count}}</span>
-            }
-            @if(apiService.dailyCount && apiService.monthlyCount){
-            <span class="center-text">Daily Applied: {{apiService.dailyCount}}</span>
-            <span class="center-text">Monthly Applied: {{apiService.monthlyCount}}</span>
-            }
-
-            @if(apiService.appliedJobDetails && apiService.appliedJobDetails.length){
-            <div class="applied-list">
-              <p>Applied Lists:</p>
-              <ul>
-                <table border="1" style="width: 100%; border-collapse: collapse;">
-                  <thead>
-                    <tr>
-                      <th style="padding: 8px;">Company Name</th>
-                      <th style="padding: 8px;">Job Title</th>
-                      <th style="padding: 8px;">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let item of apiService.appliedJobDetails">
-                      @for ( job of item?.jobs; track job.id){
-                      <td style="padding: 8px;">{{ job?.companyName }}</td>
-                      <td style="padding: 8px;">{{ job?.jobTitle }}</td>
-                      <td style="padding: 8px;"><ion-icon name="checkmark-circle-outline" role="img"
-                          class="md"></ion-icon></td>
-                      }
-                    </tr>
-                  </tbody>
-                </table>
-              </ul>
+            <div class="status-strip" [ngClass]="{
+                              'status-success': item?.status === 'success',
+                              'status-pending': item?.status === 'pending'
+                            }">
             </div>
-            }
+          </div>
+        </ion-card>
+        }
 
-            @if(apiService.chatResponseJobDetails && apiService.chatResponseJobDetails.length){
-            <p>Chat Response:</p>
-            <ul>
-              <table border="1" style="width: 100%; border-collapse: collapse;">
-                <thead>
-                  <tr>
-                    <th style="padding: 8px;">Company Name</th>
-                    <th style="padding: 8px;">Job Title</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let item of apiService.chatResponseJobDetails">
-                    @for ( job of item?.jobs; track job.id){
-                    <td id="open-toast" (click)="openJobDetail(item)" style="padding: 8px;">{{job?.companyName}}
-                    <td id="open-toast" (click)="openJobDetail(item)" style="padding: 8px;">{{job?.jobTitle}}
-                    </td>
-                    }
-                  </tr>
-                </tbody>
-              </table>
-            </ul>
-            <!-- <ion-button fill="clear" (click)="exportToExcel()" size="small">
+        }
+      </div>
+      }
+
+      @if(apiService.chatResponseJobDetails && apiService.chatResponseJobDetails.length && !showFullSearch){
+
+      @for ( item of apiService.chatResponseJobDetails; track jobIdIndex($index, item.id)){
+      @for (job of item?.jobs; track jobIdIndex($index, job.id)) {
+      <ion-card class="card-container" (click)="openJobDetail(item)">
+        <div class="card-content-with-status">
+          <div class="card-main">
+            <ion-card-header>
+              <ion-card-title>{{ job?.companyName }}</ion-card-title>
+              <ion-card-subtitle>{{ job?.jobTitle }}</ion-card-subtitle>
+            </ion-card-header>
+          </div>
+          <div class="status-strip" [ngClass]="{
+                              'status-success': item?.status === 'success',
+                              'status-pending': item?.status === 'pending'
+                            }">
+            <!-- <ion-icon [name]="job?.status === 'success' ? 'checkmark-circle' : 'time'"></ion-icon> -->
+          </div>
+        </div>
+      </ion-card>
+      }
+
+      }
+
+      <!-- <ion-button fill="clear" (click)="exportToExcel()" size="small">
               <ion-icon slot="start" name="download-outline"></ion-icon>
               Export
             </ion-button> -->
-            }
-            @if( apiService.errorMsg && apiService.errorMsg.length){
-            <div class="error-list">
-              <p>Errors:</p>
-              <ul>
-                <li *ngFor="let item of apiService.errorMsg">{{item}}</li>
-              </ul>
-            </div>
-            }
-          </div>
-        </div>
-
-
-
+      }
+      @if( apiService.errorMsg && apiService.errorMsg.length && !showFullSearch){
+      <div class="error-list">
+        <p>Errors:</p>
+        <ul>
+          <li *ngFor="let item of apiService.errorMsg">{{item}}</li>
+        </ul>
       </div>
+      }
+
+
+
     </ion-content>
+    @if(canShowChatResponse && !showFullSearch){
+    <ion-content>
+      <app-details #detialComponentRef [isChanged]="this.apiService.canProceed"
+        (onSuccess)="onSuccessEvent()"></app-details>
+    </ion-content>
+    }
   </ion-tab>
 
   <ion-tab-bar slot="bottom">

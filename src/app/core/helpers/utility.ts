@@ -1,4 +1,6 @@
+import { Inject } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
+import { AlertController } from '@ionic/angular';
 
 export async function getLocalStorageData(key: string) {
     const { value: rawValue } = await Preferences.get({ key });
@@ -12,7 +14,7 @@ export async function getLocalStorageData(key: string) {
     return { value, type, question };
 }
 
-export async function setlocalStorageData(key: string, value: string, type: string, question: string|null) {
+export async function setlocalStorageData(key: string, value: string, type: string, question: string | null) {
 
     if (value) {
         value = `${value};${type};${question}`;
@@ -27,4 +29,23 @@ export async function setlocalStorageData(key: string, value: string, type: stri
 
 export async function removeLocalStorageData(key: string) {
     await Preferences.remove({ key });
+}
+
+export async function presentValidationAlert(validationErrors: any[], jobs: any, alertController: AlertController) {
+    const errorMessages = validationErrors.map(err => {
+        const questionName = jobs[0]?.questionnaire.find(
+            (x: any) => x.questionId === err?.field
+        )?.questionName || err?.field;
+
+        return `${questionName}: ${err.message}\n`;
+    });
+
+    const alert = await alertController.create({
+        header: 'Errors',
+        message: `${errorMessages.join('\n')}`,
+        cssClass: 'error-alert',
+        buttons: ['OK']
+    });
+
+    await alert.present();
 }

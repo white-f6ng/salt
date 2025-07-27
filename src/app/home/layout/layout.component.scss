@@ -12,9 +12,6 @@ ion-content {
 }
 
 
-ion-item {
-  margin-bottom: 16px;
-}
 
 ion-input {
   --padding-start: 12px;
@@ -158,7 +155,6 @@ ion-content {
 }
 
 ion-item {
-  margin-bottom: 16px;
   --background: transparent;
 }
 
@@ -251,7 +247,7 @@ ion-icon {
 }
 
 .results-wrapper {
-  max-height: 200px; 
+  max-height: 200px;
   overflow-y: auto;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -280,6 +276,7 @@ ion-toast.custom-toast::part(button) {
   color: #030207;
   font-size: 15px;
 }
+
 .edit-storage {
   display: flex;
   align-items: center;
@@ -287,6 +284,8 @@ ion-toast.custom-toast::part(button) {
   font-weight: 500;
   color: var(--ion-color-medium);
   cursor: pointer;
+  justify-content: center;
+
 }
 
 .header-icon {
@@ -310,6 +309,243 @@ ion-toast.custom-toast::part(button) {
   font-size: 14px;
 }
 
-.layout-main-pag{
+.layout-main-pag {
   top: 50px;
+}
+
+.applied-list-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.card-content-with-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+.card-main {
+  flex: 1;
+  padding-right: 10px;
+}
+
+.status-strip {
+  width: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.card-container{
+  width: 100%;
+}
+
+.status-success {
+  background-color: #28a745; // Green
+}
+
+.status-pending {
+  background-color: #ffc107; // Yellow
+}
+
+.ripple-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.ripple-wrapper .ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(0, 0, 0, 0.2);
+  animation: ripple-animation 0.6s linear;
+  pointer-events: none;
+  width: 100px;
+  height: 100px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+}
+
+.ripple-wrapper:active .ripple {
+  transform: translate(-50%, -50%) scale(1);
+  transition: transform 0.6s, opacity 0.6s;
+  opacity: 0;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+ion-searchbar {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* Prevent overflow */
+}
+
+.search-wrapper {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  background: #f7f7f7;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+  ion-searchbar {
+    margin-bottom: 0.5rem;
+  }
+
+  .ripple-wrapper {
+    align-self: flex-end;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+  }
+
+  .filters-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+  }
+}
+
+.search-bar-wrapper {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  border: 1px solid #cc0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.collapsed-bar {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  cursor: pointer;
+
+  ion-item {
+    --background: transparent;
+    --inner-padding-start: 0;
+    --inner-padding-end: 0;
+    align-items: center;
+    width: 100%;
+  }
+
+  ion-label {
+    color: #666;
+  }
+
+
+  ion-icon {
+    color: #666;
+    margin-right: 8px;
+
+
+    &:hover {
+      color: #666 !important; // Same color on hover
+    }
+
+    .icon-inner {
+      .ionicon {
+        background: #666;
+      }
+    }
+  }
+
+}
+
+.divider {
+  width: 1px;
+  height: 3rem;
+  background-color: #666;
+  margin: 0 0.75rem;
+}
+
+.right-icon {
+  color: #666;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 4px;
+
+  &:hover {
+    background: #f2f2f2;
+  }
+}
+
+.expanded-search-wrapper {
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+ion-input,
+ion-item.dropdown {
+  --highlight-height: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.search-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+
+  ion-button {
+    flex: 1;
+    max-width: 200px;
+  }
+}
+
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+  padding-right: 7px;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.checkbox-with-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* spacing between checkbox and label */
+}
+
+.checkbox-help {
+  font-size: 0.85rem;
+  color: #666;
+  /* subtle text color */
 }

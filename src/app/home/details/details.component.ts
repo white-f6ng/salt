@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, effect, Input, OnChanges, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, EventEmitter, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { ApiService } from 'src/app/services/apiservice.service';
 import {
   IonInput, IonButton, IonList, IonLabel, IonItem, IonRadio,
@@ -30,6 +30,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
   canProcess: boolean = false;
   @Input('isChanged') isChanged: boolean = false;
   jobDetails: any;
+  @Output() onSuccess = new EventEmitter<void>();
 
   //#endregion Variables
 
@@ -180,6 +181,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
       }
     }
     this.apiService.applyChatResponse(this.jobDetails);
+    this.onSuccess.emit();
   }
 
   applyJobs() {
@@ -194,6 +196,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
         applyData[jobId] = applyData[jobId] || {};
         applyData[jobId]["answers"] = {};
         let canProceed = true;
+
 
         for (const [index, key] of questionnaire.entries()) {
           let rawQuestionName = key.questionName;
@@ -210,9 +213,10 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
             if (index == questionnaire.length - 1 && canProceed) {
               this.resultDetails.testObj['applyData'] = applyData;
               this.apiService.successResponse(this.resultDetails);
+              this.onSuccess.emit();
             }
 
-          } else if(!result?.canApply) {
+          } else if (result?.canApply) {
             let options;
             canProceed = false;
             if (["List Menu", "Radio Button", "Check Box"].some(x => x === key.questionType)) {
@@ -224,10 +228,15 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
             if (!this.controls.some(x => x.name == keyValue)) {
               this.controls.push({ name: keyValue, label: key?.questionName, type: key.questionType, options: options, Question: rawQuestionName });
             }
+          } else {
+            result.canApply = false;
+            break;
           }
         }
       }
-    })
+    });
   }
-
+  onCancel() {
+    this.onSuccess.emit();
+  }
 }
