@@ -30,7 +30,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
   canProcess: boolean = false;
   @Input('isChanged') isChanged: boolean = false;
   jobDetails: any;
-  @Output() onSuccess = new EventEmitter<void>();
+  @Output() onSuccess = new EventEmitter<boolean>();
 
   //#endregion Variables
 
@@ -181,7 +181,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
       }
     }
     this.apiService.applyChatResponse(this.jobDetails);
-    this.onSuccess.emit();
+    this.onSuccess.emit(false);
   }
 
   applyJobs() {
@@ -218,6 +218,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
 
           } else if (result?.canApply) {
             let options;
+            this.onSuccess.emit(true);
             canProceed = false;
             if (["List Menu", "Radio Button", "Check Box"].some(x => x === key.questionType)) {
               options = Object.entries(key.answerOption).map(([key, value]) => ({

@@ -7,12 +7,14 @@ import { IonButton, IonContent, IonFab, IonIcon, IonInput, IonItem, IonLabel, Io
 import { addIcons } from 'ionicons';
 import { arrowUndo, create, pencil, trash, trashBin, trashSharp } from 'ionicons/icons';
 import { getLocalStorageData, removeLocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
+import { Keyboard } from '@capacitor/keyboard';
+
 
 @Component({
   selector: 'app-preferences-viewer',
   templateUrl: './preferences-viewer.component.html',
   styleUrls: ['./preferences-viewer.component.scss'],
-  imports: [IonSearchbar, IonButton, IonInput, IonIcon,  IonItem, IonLabel,   IonContent, IonLabel, IonItem, IonList, IonIcon, IonFab, FormsModule, CommonModule],
+  imports: [IonSearchbar, IonButton, IonInput, IonIcon, IonItem, IonLabel, IonContent, IonLabel, IonItem, IonList, IonIcon, IonFab, FormsModule, CommonModule],
 })
 export class PreferencesViewerComponent implements OnInit, AfterViewInit, OnChanges, DoCheck {
   keys: string[] = [];
@@ -30,7 +32,12 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit, OnChan
   }
 
   ngOnInit() {
-
+    Keyboard.addListener('keyboardWillShow', () => {
+      const activeElement = document.activeElement as HTMLElement;
+      if (activeElement && activeElement.scrollIntoView) {
+        setTimeout(() => activeElement.scrollIntoView({ behavior: 'smooth' }), 100);
+      }
+    });
   }
   ngOnChanges(changes: SimpleChanges): void {
     this.updateFilteredKeys();
@@ -96,9 +103,9 @@ export class PreferencesViewerComponent implements OnInit, AfterViewInit, OnChan
     });
   }
 
-  
-incrementAndGet(): number {
-  return ++this.serialNumber;
-}
+
+  incrementAndGet(): number {
+    return ++this.serialNumber;
+  }
 
 }

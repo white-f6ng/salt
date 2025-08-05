@@ -20,7 +20,7 @@ import { DetailsComponent } from '../details/details.component';
   selector: 'app-layout',
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss'],
-  imports: [IonCheckbox, IonChip, IonBadge, IonCard, IonCardTitle, IonCardSubtitle,  IonCardHeader,  IonLabel, IonIcon, IonTab, IonTabBar, IonTabButton, CommonModule, IonTabs, IonInput, IonButton, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonSearchbar, IonList, DetailsComponent, FormsModule ],
+  imports: [IonCheckbox, IonChip, IonBadge, IonCard, IonCardTitle, IonCardSubtitle, IonCardHeader, IonLabel, IonIcon, IonTab, IonTabBar, IonTabButton, CommonModule, IonTabs, IonInput, IonButton, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonSearchbar, IonList, DetailsComponent, FormsModule],
   providers: [BackgroundMode]
 })
 export class LayoutComponent implements OnInit, AfterViewInit {
@@ -182,7 +182,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
     } else {
       preferedTitle = [];
     }
-
+    this.isStopped = !this.isStopped;
     if (this.buttonMsg === "Cancel") {
       this.apiService.canProceed = false;
       this.buttonMsg = "Search";
@@ -308,7 +308,6 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   async openJobDetail(job: any) {
     if (job) {
-      this.canShowChatResponse = true;
       this.jobDeatils = job;
       job["canApply"] = true;
       setTimeout(async () => {
@@ -386,7 +385,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   }
   playTriggered(event: Event) {
     event.stopPropagation();
-    this.isStopped = true;
+    // this.isStopped = true;
     if (this.buttonMsg === "Search") {
       this.submitSearch();
     }
@@ -398,7 +397,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   }
 
-  onSuccessEvent() {
-    this.canShowChatResponse = false;
+  onSuccessEvent(event:boolean) {
+    this.canShowChatResponse = event;
   }
 }

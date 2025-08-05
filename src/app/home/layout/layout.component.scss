@@ -337,7 +337,7 @@ ion-toast.custom-toast::part(button) {
   color: white;
 }
 
-.card-container{
+.card-container {
   width: 100%;
 }
 
@@ -473,12 +473,13 @@ ion-searchbar {
 .divider {
   width: 1px;
   height: 3rem;
-  background-color: #666;
+  background-color: #cc0;
   margin: 0 0.75rem;
+  position: relative;
 }
 
 .right-icon {
-  color: #666;
+  color: #cc0;
   font-size: 20px;
   cursor: pointer;
   transition: background 0.2s;
@@ -487,6 +488,10 @@ ion-searchbar {
   &:hover {
     background: #f2f2f2;
   }
+}
+
+.force-hide {
+  visibility: hidden;
 }
 
 .expanded-search-wrapper {

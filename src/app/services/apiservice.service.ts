@@ -494,15 +494,17 @@ export class ApiService {
       let validationErrors = status?.jobs[0]?.validationError;
       this.validation.update(value => true);
       presentValidationAlert(validationErrors, cr, this.alertController);
-
     }
 
     this.dailyCount = applySucc?.data?.quotaDetails?.dailyApplied;
     this.monthlyCount = applySucc?.data?.quotaDetails?.monthlyApplied;
     if (applySucc?.data?.quotaDetails?.dailyApplied) {
       this.chatResponseJobDetails = this.chatResponseJobDetails.filter(x => x.jobs[0].jobId !== cr.jobs[0].jobId);
-      cr["status"] = "success";
-      this.appliedJobDetails = this.appliedJobDetails.concat(cr);
+      let isExists = this.appliedJobDetails.some(x => x.jobs[0].jobId === cr.jobs[0].jobId);
+      if (!isExists) {
+        cr["status"] = "success";
+        this.appliedJobDetails = this.appliedJobDetails.concat(cr);
+      }
     }
 
   }

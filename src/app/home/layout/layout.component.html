@@ -32,7 +32,7 @@
         <p>
           {{ apiService.apiresponseData.content }}
         </p>
-        
+
 
         <ion-chip color="primary">
           <ion-label>Previous Status:</ion-label>
@@ -52,7 +52,8 @@
         <div class="collapsed-bar">
           <ion-item lines="none" class="compact-item" (click)="showFullSearch = !showFullSearch">
             <ion-icon name="search-outline" slot="start"></ion-icon>
-            <ion-label color="medium">Search jobs, skills, companies...</ion-label>
+            <ion-label class="search-label" color="medium">{{(userDetails?.skills)?userDetails?.skills +','+
+              userDetails?.Experience : 'Search jobs, skills, companies...'}}</ion-label>
           </ion-item>
         </div>
 
@@ -136,21 +137,6 @@
           Edit Storage
         </p>
       </div>
-
-      <!-- <ion-button id="hover-trigger">Hover Over Me</ion-button>
-
-                  <ion-popover trigger="hover-trigger" triggerAction="hover">
-              <ng-template>
-                <ion-content class="ion-padding">Hello World!</ion-content>
-              </ng-template>
-      </ion-popover> -->
-
-
-
-
-
-      <!-- <ion-button (click)="clearChatRes()" shape="round" size="small" expand="full">clear Chat
-              response</ion-button> -->
 
       @if(showMessage){
       <div class="message-display">
@@ -243,10 +229,10 @@
 
 
     </ion-content>
-    @if(canShowChatResponse && !showFullSearch){
-    <ion-content>
+    @if(showFullSearch){
+    <ion-content [class.force-hide]="!canShowChatResponse">
       <app-details #detialComponentRef [isChanged]="this.apiService.canProceed"
-        (onSuccess)="onSuccessEvent()"></app-details>
+        (onSuccess)="onSuccessEvent($event)"></app-details>
     </ion-content>
     }
   </ion-tab>
