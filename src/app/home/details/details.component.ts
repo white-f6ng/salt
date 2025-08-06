@@ -213,12 +213,12 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
             if (index == questionnaire.length - 1 && canProceed) {
               this.resultDetails.testObj['applyData'] = applyData;
               this.apiService.successResponse(this.resultDetails);
-              this.onSuccess.emit();
+              this.onSuccess.emit(true);
             }
 
           } else if (result?.canApply) {
             let options;
-            this.onSuccess.emit(true);
+            this.onSuccess.emit(false);
             canProceed = false;
             if (["List Menu", "Radio Button", "Check Box"].some(x => x === key.questionType)) {
               options = Object.entries(key.answerOption).map(([key, value]) => ({
@@ -238,6 +238,6 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
     });
   }
   onCancel() {
-    this.onSuccess.emit();
+    this.onSuccess.emit(true);
   }
 }

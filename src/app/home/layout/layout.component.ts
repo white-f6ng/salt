@@ -57,6 +57,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   canDisplayFilters: boolean = false;
   showFullSearch: boolean = false;
   canShowChatResponse: boolean = false;
+  canShowChatDetail: boolean = true;
 
 
   constructor(public apiService: ApiService, private router: Router, private platform: Platform,
@@ -378,7 +379,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   pauseTriggered(event: Event) {
     event.stopPropagation();
-    this.isStopped = false;
+    // this.isStopped = false;
     if (this.buttonMsg === "Cancel") {
       this.submitSearch();
     }
@@ -398,6 +399,6 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   }
 
   onSuccessEvent(event:boolean) {
-    this.canShowChatResponse = event;
+    this.canShowChatDetail = event;
   }
 }
