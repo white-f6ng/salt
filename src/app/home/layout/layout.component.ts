@@ -176,6 +176,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   submitSearch() {
     this.showFullSearch = false;
+    this.showMessage = false;
     let preferedTitle: string[] = [];
     this.getAllPreferences();
     if (typeof this.userDetails.PreferedTitle === 'string') {
@@ -400,5 +401,6 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   onSuccessEvent(event:boolean) {
     this.canShowChatDetail = event;
+    this.canShowChatResponse = !event;
   }
 }

@@ -228,7 +228,7 @@
 
 
     </ion-content>
-    <ion-content [class.force-hide]="canShowChatDetail">
+    <ion-content [class.force-hide]="!canShowChatResponse">
       <app-details #detialComponentRef [isChanged]="this.apiService.canProceed"
         (onSuccess)="onSuccessEvent($event)"></app-details>
     </ion-content>

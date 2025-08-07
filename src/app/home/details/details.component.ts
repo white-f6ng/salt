@@ -238,6 +238,7 @@ export class DetailsComponent implements OnInit, AfterViewInit, OnChanges {
     });
   }
   onCancel() {
+    this.controls= [];
     this.onSuccess.emit(true);
   }
 }
