@@ -222,22 +222,24 @@ export class ApiService {
 
           for (let i = 0; i < jobDetails?.length; i++) {
             const job = jobDetails[i];
+            // const jobApplyUrl = `https://www.naukri.com/jobapi/v4/job/${job.jobId
+            //   }?microsite=y&src=jobsearchDesk&sid=${sid}&xp=${i + 1
+            //   }&px=${this.pageNumber}&nignbevent_src=jobsearchDeskGNB`;
             const jobApplyUrl = `https://www.naukri.com/jobapi/v4/job/${job.jobId
-              }?microsite=y&src=jobsearchDesk&sid=${sid}&xp=${i + 1
+              }?microsite=y&brandedConsultantJd=true&src=directSearch&sid=${sid}&xp=${i + 1
               }&px=${this.pageNumber}&nignbevent_src=jobsearchDeskGNB`;
 
             const options = {
               url: jobApplyUrl,
               headers: {
                 "Content-Type": "application/json",
-                accept: "application/json",
+                Accept: "application/json, */*",
                 appid: "121",
                 clientid: "d3skt0p",
                 systemid: "Naukri",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
                 Authorization: `Bearer ${this.token}`,
-                NKparam: "==",
-                cookie: "nauk_at",
+                cookie: "nauk_at"
               }
             };
 
