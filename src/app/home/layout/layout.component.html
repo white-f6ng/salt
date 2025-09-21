@@ -5,7 +5,7 @@
       Logout</ion-button> -->
   </div>
   <!-- Home Tab -->
-  <ion-tab tab="home" class="layout-main-pag">
+  <!-- <ion-tab tab="home" class="layout-main-pag">
     <ion-content>
       <div id="home-page">
         <div class="example-content">
@@ -43,7 +43,7 @@
 
       </div>
     </ion-content>
-  </ion-tab>
+  </ion-tab> -->
 
   <ion-tab class="layout-main-pag" tab="search">
     <ion-content *ngIf="!canShowChatResponse">
@@ -51,33 +51,33 @@
       <div class="search-bar-wrapper" *ngIf="!showFullSearch">
         <div class="collapsed-bar">
           <ion-item lines="none" class="compact-item" (click)="showFullSearch = !showFullSearch">
-            <ion-icon name="search-outline" slot="start"></ion-icon>
             <ion-label class="search-label" color="medium">{{(userDetails?.skills)?userDetails?.skills +','+
               userDetails?.Experience : 'Search jobs, skills, companies...'}}</ion-label>
+            <ion-icon name="search-outline" slot="start"></ion-icon>
           </ion-item>
         </div>
 
-        <div class="icon-wrapper">
+        <!-- <div class="icon-wrapper">
 
-          <!-- Divider -->
           <div class="divider"></div>
 
-          <!-- Toggle icon -->
           <ion-icon name="pause-outline" class="right-icon" *ngIf="isStopped" (click)="pauseTriggered($event)">
           </ion-icon>
 
           <ion-icon name="play-outline" class="right-icon" *ngIf="!isStopped" (click)="playTriggered($event)">
           </ion-icon>
-        </div>
+        </div> -->
+
       </div>
 
       <!-- 🔹 EXPANDED SEARCH PANEL -->
       <div *ngIf="showFullSearch" class="expanded-search-wrapper">
         <!-- Searchbar -->
-        <ion-searchbar (ionInput)="handleInput($event)" [(ngModel)]="userDetails.skills"
-          placeholder="Enter skills / designations / companies" showCancelButton="focus">
+        <ion-searchbar #searchBarRef (ngModelChange)="handleSearchChange($event)" (blur)="onSearchBlurTriggered()"
+          [(ngModel)]="userDetails.skills" placeholder="Enter skills / designations / companies"
+          showCancelButton="focus" (ionClear)="clearSearch()" debounce="300">
         </ion-searchbar>
-        @if(results.length && !selectedValue){
+        @if(results && results.length && canShowSearchList){
         <div class="results-wrapper">
           <ion-list>
             @for (result of results; track result) {
@@ -234,7 +234,7 @@
     </ion-content>
   </ion-tab>
 
-  <ion-tab-bar slot="bottom">
+  <!-- <ion-tab-bar slot="bottom">
     <ion-icon name="home"></ion-icon>
     <ion-tab-button tab="home" class="tab-align">
       <ion-icon name="play-circle"></ion-icon>
@@ -244,5 +244,5 @@
       <ion-icon name="search" role="img" class="md"></ion-icon>
       Job Search
     </ion-tab-button>
-  </ion-tab-bar>
+  </ion-tab-bar> -->
 </ion-tabs>

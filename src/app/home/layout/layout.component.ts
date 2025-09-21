@@ -5,12 +5,12 @@ import { Router } from '@angular/router';
 import { BackgroundMode } from '@awesome-cordova-plugins/background-mode/ngx';
 import { Clipboard } from '@capacitor/clipboard';
 import { Preferences } from '@capacitor/preferences';
-import { AlertController, Platform, ToastController } from '@ionic/angular';
-import { IonBadge, IonButton, IonCard, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCheckbox, IonChip, IonContent, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSelect, IonSelectOption, IonTab, IonTabBar, IonTabButton, IonTabs } from "@ionic/angular/standalone";
+import { Platform, ToastController } from '@ionic/angular';
+import { IonBadge, IonButton, IonCard, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCheckbox, IonChip, IonContent, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSelect, IonSelectOption, IonTab, IonTabs } from "@ionic/angular/standalone";
 import { addIcons } from 'ionicons';
 import { checkmarkCircleOutline, clipboardOutline, close, createOutline, downloadOutline, fileTray, funnelOutline, logOutOutline, pauseOutline, playCircle, playOutline, search, searchOutline, time } from 'ionicons/icons';
 import { interval, Subscription } from 'rxjs';
-import { getLocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
+import { getLocalStorageData, removeLocalStorageData, setlocalStorageData } from 'src/app/core/helpers/utility';
 import { ApiService } from 'src/app/services/apiservice.service';
 import { DetailsComponent } from '../details/details.component';
 
@@ -20,7 +20,7 @@ import { DetailsComponent } from '../details/details.component';
   selector: 'app-layout',
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss'],
-  imports: [IonCheckbox, IonChip, IonBadge, IonCard, IonCardTitle, IonCardSubtitle, IonCardHeader, IonLabel, IonIcon, IonTab, IonTabBar, IonTabButton, CommonModule, IonTabs, IonInput, IonButton, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonSearchbar, IonList, DetailsComponent, FormsModule],
+  imports: [IonCheckbox, IonChip, IonBadge, IonCard, IonCardTitle, IonCardSubtitle, IonCardHeader, IonLabel, IonIcon, IonTab,  CommonModule, IonTabs, IonInput, IonButton, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonSearchbar, IonList, DetailsComponent, FormsModule],
   providers: [BackgroundMode]
 })
 export class LayoutComponent implements OnInit, AfterViewInit {
@@ -33,6 +33,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   @ViewChild('selectRef') selectRef!: IonSelect;
   @ViewChild('detialComponentRef') detialComponentRef!: DetailsComponent;
   @ViewChildren(IonInput) ionInputs!: QueryList<IonInput>;
+  @ViewChild('searchBarRef') searchBarRef!: IonSearchbar;
 
   showMessage: boolean = false;
   messageContent: string = "";
@@ -58,6 +59,8 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   showFullSearch: boolean = false;
   canShowChatResponse: boolean = false;
   canShowChatDetail: boolean = true;
+  canShowSearchList: boolean = false;
+  searchBarDisplayName: string = "";
 
 
   constructor(public apiService: ApiService, private router: Router, private platform: Platform,
@@ -95,7 +98,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.getLocalStorage();
-    this.loadPreferences();
+    // this.loadPreferences();
   }
 
   startBackgroundTask() {
@@ -190,8 +193,8 @@ export class LayoutComponent implements OnInit, AfterViewInit {
       this.buttonMsg = "Search";
     } else if (this.apiService.token) {
       this.searchData = {
-        skills: this.userDetails.skills,
-        experience: this.userDetails.experience,
+        skills: encodeURIComponent(this.searchBarDisplayName.toLocaleLowerCase()),
+        experience: this.userDetails.Experience,
         location: this.userDetails.prefLocation,
         jobAge: this.userDetails.freshness,
         preferedTitle: preferedTitle,
@@ -220,9 +223,17 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   }
 
   selectResult(data: string) {
-    const encodedValue = encodeURIComponent(data.toLocaleLowerCase());
-    this.selectedValue = encodedValue;
-    this.userDetails.skills = data;
+    // const encodedValue = encodeURIComponent(data.toLocaleLowerCase());
+    this.canShowSearchList = false;
+    this.selectedValue += data;
+    if (this.searchBarDisplayName) {
+      this.searchBarDisplayName += ', ' + data;
+    } else {
+      this.searchBarDisplayName = data;
+    }
+
+
+    this.userDetails.skills = this.searchBarDisplayName;
   }
 
   exportToExcel() {
@@ -399,8 +410,28 @@ export class LayoutComponent implements OnInit, AfterViewInit {
 
   }
 
-  onSuccessEvent(event:boolean) {
+  onSuccessEvent(event: boolean) {
     this.canShowChatDetail = event;
     this.canShowChatResponse = !event;
   }
+
+  async handleSearchChange(event: string) {
+    this.results = [];
+    this.canShowSearchList = true;
+    let query = event.split(',').pop()?.toLowerCase().trim() || '';
+
+    if (query.length) {
+      this.results = await this.apiService.getLovData(query);
+    }
+  }
+
+  onSearchBlurTriggered() {
+    this.canShowSearchList = false;
+  }
+
+  clearSearch() {
+    this.searchBarDisplayName = "";
+    removeLocalStorageData('skills');
+  }
+
 }

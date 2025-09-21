@@ -6,6 +6,8 @@ import * as XLSX from 'xlsx';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { presentValidationAlert } from '../core/helpers/utility';
 import { AlertController } from '@ionic/angular';
+import { JSEncrypt } from 'jsencrypt'
+
 
 
 @Injectable({
@@ -115,6 +117,7 @@ export class ApiService {
       const response = await CapacitorHttp.post(options);
       this.token = response?.data?.cookies[0]?.value;
     } catch (error) {
+      this.token = "";
       console.error("Login failed:", error);
     }
   }
@@ -126,11 +129,11 @@ export class ApiService {
 
     let payload: any = {
       noOfResults: 20,
-      urlType: "search_by_key_loc",
+      urlType: "search_by_keyword",
       searchType: "adv",
       location: location?.toLowerCase(),
       keyword: skills?.toLowerCase(),
-      sort: "r",
+      sort: "p",
       pageNo: this.pageNumber,
       experience: experience,
       jobAge: jobAge,
@@ -158,7 +161,7 @@ export class ApiService {
 
       // Special case for 'src'
       if (key === "src" && payload['jobAge']) {
-        queryParts.push(`src=cluster`);
+        queryParts.push(`src=jobsearchDesk`);
       } else {
         queryParts.push(`${key}=${value}`);
       }
@@ -200,14 +203,16 @@ export class ApiService {
       const options = {
         url: url,
         headers: {
-          "Content-Type": "application/json",
           accept: "application/json",
           appid: "109",
           clientid: "d3skt0p",
           systemid: "Naukri",
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
           Authorization: `Bearer ${this.token}`,
-          nkparam: "==",
+          "accept-encoding": "identity",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+          nkparam: this.encryptData(`v0|${new Date().getTime()}|121_srp`),
+          Host: "www.naukri.com"
+
         }
       };
 
@@ -222,24 +227,20 @@ export class ApiService {
 
           for (let i = 0; i < jobDetails?.length; i++) {
             const job = jobDetails[i];
-            // const jobApplyUrl = `https://www.naukri.com/jobapi/v4/job/${job.jobId
-            //   }?microsite=y&src=jobsearchDesk&sid=${sid}&xp=${i + 1
-            //   }&px=${this.pageNumber}&nignbevent_src=jobsearchDeskGNB`;
+            
             const jobApplyUrl = `https://www.naukri.com/jobapi/v4/job/${job.jobId
-              }?microsite=y&brandedConsultantJd=true&src=directSearch&sid=${sid}&xp=${i + 1
+              }?microsite=y&brandedConsultantJd=true&src=jobsearchDesk&sid=${sid}&xp=${i + 1
               }&px=${this.pageNumber}&nignbevent_src=jobsearchDeskGNB`;
 
             const options = {
               url: jobApplyUrl,
               headers: {
                 "Content-Type": "application/json",
-                Accept: "application/json, */*",
                 appid: "121",
                 clientid: "d3skt0p",
                 systemid: "Naukri",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-                Authorization: `Bearer ${this.token}`,
-                cookie: "nauk_at"
+                nkparam: this.encryptData(`v0|${new Date().getTime()}|121_+${job.jobId}`),
+                Host: "www.naukri.com"
               }
             };
 
@@ -550,6 +551,12 @@ export class ApiService {
     let outResult = await CapacitorHttp.get(options);
 
     this.dashboardOutResult = outResult.data;
+  }
+
+  encryptData(data: string): string {
+    const encryptor = new JSEncrypt();
+    encryptor.setPublicKey("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALrlQ+djR0RjJwBF1xuisHmdFv334MImK6LgzJhmLhN7B5yuEyaKoasgXQk3+OQglsOaBxEJ0j5PcTL3nbOvt80CAwEAAQ==");
+    return encryptor.encrypt(data) || "";
   }
 
 }

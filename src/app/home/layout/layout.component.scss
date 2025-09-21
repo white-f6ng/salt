@@ -455,6 +455,8 @@ ion-searchbar {
   ion-icon {
     color: #666;
     margin-right: 8px;
+    bottom: 3px;
+    position: relative;
 
 
     &:hover {
@@ -468,6 +470,11 @@ ion-searchbar {
     }
   }
 
+}
+
+.search-label {
+  display: flex;
+  justify-content: center;
 }
 
 .divider {
